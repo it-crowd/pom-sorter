@@ -1,0 +1,24 @@
+<idea-plugin version="2">
+    <name>Pom sorter</name>
+    <description>Sorts contents of maven project descriptor</description>
+    <version>1.0.0-SNAPSHOT</version>
+    <vendor email="contact@it-crowd.com.pl" url="http://it-crowd.com.pl">IT Crowd</vendor>
+
+    <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="107.105"/>
+
+    <project-components>
+        <component>
+            <implementation-class>pl.com.it_crowd.pom_sorter.PomSorter</implementation-class>
+        </component>
+    </project-components>
+
+    <actions>
+        <action id="SortPOM" class="pl.com.it_crowd.pom_sorter.SortPomAction" text="Sort POM">
+            <add-to-group group-id="ToolsXmlGroup"/>
+            <add-to-group group-id="XmlGenerateToolsGroup"/>
+        </action>
+    </actions>
+
+    <extensions defaultExtensionNs="com.intellij"/>
+</idea-plugin>
