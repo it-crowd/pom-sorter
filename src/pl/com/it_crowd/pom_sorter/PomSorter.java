@@ -11,6 +11,7 @@ import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagChild;
 import com.intellij.psi.xml.XmlTagValue;
+import com.intellij.psi.xml.XmlText;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -115,14 +116,9 @@ public class PomSorter implements ProjectComponent {
             ApplicationManager.getApplication().runWriteAction(new Runnable() {
                 public void run()
                 {
-                    xmlFile.accept(new PomSortVisitor());
                     final PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
                     psiDocumentManager.commitDocument(document);
-                    final XmlTag dependencyManagement = rootTag.findFirstSubTag("dependencyManagement");
-                    if (dependencyManagement != null) {
-                        sortDependencies(dependencyManagement.findFirstSubTag("dependencies"));
-                    }
-                    sortDependencies(rootTag.findFirstSubTag("dependencies"));
+                    xmlFile.accept(new PomSortVisitor());
                     CodeStyleManager.getInstance(rootTag.getProject()).reformat(rootTag);
                     psiDocumentManager.commitDocument(document);
                 }
@@ -141,24 +137,29 @@ public class PomSorter implements ProjectComponent {
             return;
         }
         final TreeSet<XmlTag> xmlTags = new TreeSet<XmlTag>(comparator);
-        final XmlTag[] dependencies = tag.getSubTags();
-        Collections.addAll(xmlTags, dependencies);
+        final XmlTag[] subTags = tag.getSubTags();
+        Collections.addAll(xmlTags, subTags);
         final XmlTagValue xmlTagValue = tag.getValue();
         final XmlTagChild[] children = xmlTagValue.getChildren();
         if (children.length > 0) {
             tag.deleteChildRange(children[0], children[children.length - 1]);
         }
+        final StringBuilder stringBuilder = new StringBuilder();
+        for (XmlText xmlText : xmlTagValue.getTextElements()) {
+            stringBuilder.append(xmlText.getText().trim());
+        }
+        tag.getValue().setText(stringBuilder.toString());
         for (XmlTag childTag : xmlTags) {
             tag.add(tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false));
         }
     }
 
-    private void sortDependencies(final XmlTag dependenciesTag)
+    private void sortDependencies(XmlTag dependenciesTag)
     {
         sortChildren(dependenciesTag, artifactComparator);
     }
 
-    private void sortPlugins(final XmlTag pluginsTag)
+    private void sortPlugins(XmlTag pluginsTag)
     {
         sortChildren(pluginsTag, artifactComparator);
     }
@@ -202,7 +203,7 @@ public class PomSorter implements ProjectComponent {
                 sortDependencies(tag);
             } else if ("plugins".equals(tagName)) {
                 sortPlugins(tag);
-            } else if ("properties".equals(tagName)) {
+            } else {
                 sortByChildTagName(tag);
             }
         }

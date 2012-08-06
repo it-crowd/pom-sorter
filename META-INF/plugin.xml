@@ -16,7 +16,7 @@
     <actions>
         <action id="SortPOM" class="pl.com.it_crowd.pom_sorter.SortPomAction" text="Sort POM">
             <add-to-group group-id="ToolsXmlGroup"/>
-            <add-to-group group-id="XmlGenerateToolsGroup"/>
+            <add-to-group group-id="XmlGenerateToolsGroup" anchor="after" relative-to-action="Document2XSD"/>
         </action>
     </actions>
 
