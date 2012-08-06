@@ -12,6 +12,7 @@ import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagChild;
 import com.intellij.psi.xml.XmlTagValue;
 import com.intellij.psi.xml.XmlText;
+import org.apache.commons.collections.comparators.NullComparator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
@@ -23,13 +24,33 @@ import java.util.TreeSet;
 public class PomSorter implements ProjectComponent {
 // ------------------------------ FIELDS ------------------------------
 
-    private static final Map<String, Integer> TAG_PRIORITY = new HashMap<String, Integer>();
+    private static final Map<String, Integer> BUILD_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Map<String, Integer> DEPENDENCY_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Map<String, Integer> EXECUTION_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Map<String, Integer> PLUGIN_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Map<String, Integer> PROFILE_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Map<String, Integer> PROJECT_CHILDREN_PRIORITY = new HashMap<String, Integer>();
 
     private Comparator<XmlTag> artifactComparator = new ArtifactComparator();
 
+    private FixedOrderComparator buildChildrenComparator = new FixedOrderComparator(BUILD_CHILDREN_PRIORITY);
+
+    private FixedOrderComparator dependencyChildrenComparator = new FixedOrderComparator(DEPENDENCY_CHILDREN_PRIORITY);
+
+    private FixedOrderComparator executionChildrenComparator = new FixedOrderComparator(EXECUTION_CHILDREN_PRIORITY);
+
+    private FixedOrderComparator pluginChildrenComparator = new FixedOrderComparator(PLUGIN_CHILDREN_PRIORITY);
+
+    private FixedOrderComparator profileChildrenComparator = new FixedOrderComparator(PROFILE_CHILDREN_PRIORITY);
+
     private Project project;
 
-    private ProjectChildrenComparator projectChildrenComparator = new ProjectChildrenComparator();
+    private FixedOrderComparator projectChildrenComparator = new FixedOrderComparator(PROJECT_CHILDREN_PRIORITY);
 
     private TagNameComparator tagNameComparator = new TagNameComparator();
 
@@ -37,36 +58,58 @@ public class PomSorter implements ProjectComponent {
 
     static {
         int i = 0;
-        TAG_PRIORITY.put("modelVersion", i++);
-        TAG_PRIORITY.put("parent", i++);
-        TAG_PRIORITY.put("artifactId", i++);
-        TAG_PRIORITY.put("groupId", i++);
-        TAG_PRIORITY.put("versionId", i++);
-        TAG_PRIORITY.put("packaging", i++);
-        TAG_PRIORITY.put("name", i++);
-        TAG_PRIORITY.put("description", i++);
-        TAG_PRIORITY.put("url", i++);
-        TAG_PRIORITY.put("inceptionYear", i++);
-        TAG_PRIORITY.put("licenses", i++);
-        TAG_PRIORITY.put("organization", i++);
-        TAG_PRIORITY.put("properties", i++);
-        TAG_PRIORITY.put("modules", i++);
-        TAG_PRIORITY.put("dependencyManagement", i++);
-        TAG_PRIORITY.put("dependencies", i++);
-        TAG_PRIORITY.put("build", i++);
-        TAG_PRIORITY.put("reporting", i++);
-        TAG_PRIORITY.put("issueManagement", i++);
-        TAG_PRIORITY.put("ciManagement", i++);
-        TAG_PRIORITY.put("mailingLists", i++);
-        TAG_PRIORITY.put("scm", i++);
-        TAG_PRIORITY.put("prerequisites", i++);
-        TAG_PRIORITY.put("repositories", i++);
-        TAG_PRIORITY.put("pluginRepositories", i++);
-        TAG_PRIORITY.put("distributionManagement", i++);
-        TAG_PRIORITY.put("profiles", i++);
-        TAG_PRIORITY.put("developers", i++);
-        TAG_PRIORITY.put("contributors", i++);
-        TAG_PRIORITY.put(null, i);
+        PROJECT_CHILDREN_PRIORITY.put("modelVersion", i++);
+        PROJECT_CHILDREN_PRIORITY.put("parent", i++);
+        PROJECT_CHILDREN_PRIORITY.put("groupId", i++);
+        PROJECT_CHILDREN_PRIORITY.put("artifactId", i++);
+        PROJECT_CHILDREN_PRIORITY.put("version", i++);
+        PROJECT_CHILDREN_PRIORITY.put("packaging", i++);
+        PROJECT_CHILDREN_PRIORITY.put("name", i++);
+        PROJECT_CHILDREN_PRIORITY.put("description", i++);
+        PROJECT_CHILDREN_PRIORITY.put("url", i++);
+        PROJECT_CHILDREN_PRIORITY.put("inceptionYear", i++);
+        PROJECT_CHILDREN_PRIORITY.put("licenses", i++);
+        PROJECT_CHILDREN_PRIORITY.put("organization", i++);
+        PROJECT_CHILDREN_PRIORITY.put("properties", i++);
+        PROJECT_CHILDREN_PRIORITY.put("modules", i++);
+        PROJECT_CHILDREN_PRIORITY.put("dependencyManagement", i++);
+        PROJECT_CHILDREN_PRIORITY.put("dependencies", i++);
+        PROJECT_CHILDREN_PRIORITY.put("build", i++);
+        PROJECT_CHILDREN_PRIORITY.put("reporting", i++);
+        PROJECT_CHILDREN_PRIORITY.put("issueManagement", i++);
+        PROJECT_CHILDREN_PRIORITY.put("ciManagement", i++);
+        PROJECT_CHILDREN_PRIORITY.put("mailingLists", i++);
+        PROJECT_CHILDREN_PRIORITY.put("scm", i++);
+        PROJECT_CHILDREN_PRIORITY.put("prerequisites", i++);
+        PROJECT_CHILDREN_PRIORITY.put("repositories", i++);
+        PROJECT_CHILDREN_PRIORITY.put("pluginRepositories", i++);
+        PROJECT_CHILDREN_PRIORITY.put("distributionManagement", i++);
+        PROJECT_CHILDREN_PRIORITY.put("profiles", i++);
+        PROJECT_CHILDREN_PRIORITY.put("developers", i++);
+        PROJECT_CHILDREN_PRIORITY.put("contributors", i++);
+        PROJECT_CHILDREN_PRIORITY.put(null, i);
+        i = 0;
+        DEPENDENCY_CHILDREN_PRIORITY.put("groupId", i++);
+        DEPENDENCY_CHILDREN_PRIORITY.put("artifactId", i++);
+        DEPENDENCY_CHILDREN_PRIORITY.put("version", i++);
+        DEPENDENCY_CHILDREN_PRIORITY.put("scope", i++);
+        DEPENDENCY_CHILDREN_PRIORITY.put(null, i);
+        PLUGIN_CHILDREN_PRIORITY.putAll(DEPENDENCY_CHILDREN_PRIORITY);
+        i = 0;
+        BUILD_CHILDREN_PRIORITY.put("finalName", i++);
+        BUILD_CHILDREN_PRIORITY.put("resources", i++);
+        BUILD_CHILDREN_PRIORITY.put("testResources", i++);
+        BUILD_CHILDREN_PRIORITY.put("filters", i++);
+        BUILD_CHILDREN_PRIORITY.put("pluginManagement", i++);
+        BUILD_CHILDREN_PRIORITY.put("plugins", i++);
+        BUILD_CHILDREN_PRIORITY.put(null, i);
+        i = 0;
+        PROFILE_CHILDREN_PRIORITY.put("id", i++);
+        PROFILE_CHILDREN_PRIORITY.put(null, i);
+        i = 0;
+        EXECUTION_CHILDREN_PRIORITY.put("id", i++);
+        EXECUTION_CHILDREN_PRIORITY.put("phase", i++);
+        EXECUTION_CHILDREN_PRIORITY.put(null, i);
     }
 
 // --------------------------- CONSTRUCTORS ---------------------------
@@ -126,6 +169,11 @@ public class PomSorter implements ProjectComponent {
         }
     }
 
+    private void sortBuild(XmlTag tag)
+    {
+        sortChildren(tag, buildChildrenComparator);
+    }
+
     private void sortByChildTagName(XmlTag tag)
     {
         sortChildren(tag, tagNameComparator);
@@ -159,9 +207,30 @@ public class PomSorter implements ProjectComponent {
         sortChildren(dependenciesTag, artifactComparator);
     }
 
+    private void sortDependency(XmlTag tag)
+    {
+        sortChildren(tag, dependencyChildrenComparator);
+    }
+
+    private void sortExecution(XmlTag tag)
+
+    {
+        sortChildren(tag, executionChildrenComparator);
+    }
+
+    private void sortPlugin(XmlTag tag)
+    {
+        sortChildren(tag, pluginChildrenComparator);
+    }
+
     private void sortPlugins(XmlTag pluginsTag)
     {
         sortChildren(pluginsTag, artifactComparator);
+    }
+
+    private void sortProfile(XmlTag tag)
+    {
+        sortChildren(tag, profileChildrenComparator);
     }
 
     private void sortProject(XmlTag tag)
@@ -189,6 +258,44 @@ public class PomSorter implements ProjectComponent {
         }
     }
 
+    private class FixedOrderComparator implements Comparator<XmlTag> {
+// ------------------------------ FIELDS ------------------------------
+
+        private final NullComparator nullComparator = new NullComparator();
+
+        private final Map<String, Integer> priority;
+
+// --------------------------- CONSTRUCTORS ---------------------------
+
+        private FixedOrderComparator(Map<String, Integer> priority)
+        {
+            this.priority = priority;
+        }
+
+// ------------------------ INTERFACE METHODS ------------------------
+
+
+// --------------------- Interface Comparator ---------------------
+
+        @Override
+        public int compare(XmlTag a, XmlTag b)
+        {
+            Integer priorityA = priority.get(a.getName());
+            if (priorityA == null) {
+                priorityA = priority.get(null);
+            }
+            Integer priorityB = priority.get(b.getName());
+            if (priorityB == null) {
+                priorityB = priority.get(null);
+            }
+            if (priorityA.equals(priorityB)) {
+                return nullComparator.compare(a.getName(), b.getName());
+            } else {
+                return priorityA.compareTo(priorityB);
+            }
+        }
+    }
+
     private class PomSortVisitor extends XmlRecursiveElementVisitor {
 // -------------------------- OTHER METHODS --------------------------
 
@@ -203,30 +310,19 @@ public class PomSorter implements ProjectComponent {
                 sortDependencies(tag);
             } else if ("plugins".equals(tagName)) {
                 sortPlugins(tag);
+            } else if ("plugin".equals(tagName)) {
+                sortPlugin(tag);
+            } else if ("dependency".equals(tagName)) {
+                sortDependency(tag);
+            } else if ("build".equals(tagName)) {
+                sortBuild(tag);
+            } else if ("profile".equals(tagName)) {
+                sortProfile(tag);
+            } else if ("execution".equals(tagName)) {
+                sortExecution(tag);
             } else {
                 sortByChildTagName(tag);
             }
-        }
-    }
-
-    private class ProjectChildrenComparator implements Comparator<XmlTag> {
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface Comparator ---------------------
-
-        @Override
-        public int compare(XmlTag a, XmlTag b)
-        {
-            Integer priorityA = TAG_PRIORITY.get(a.getName());
-            if (priorityA == null) {
-                priorityA = TAG_PRIORITY.get(null);
-            }
-            Integer priorityB = TAG_PRIORITY.get(b.getName());
-            if (priorityB == null) {
-                priorityB = TAG_PRIORITY.get(null);
-            }
-            return priorityA.compareTo(priorityB);
         }
     }
 
