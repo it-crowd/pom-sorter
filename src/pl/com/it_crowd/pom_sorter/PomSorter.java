@@ -15,11 +15,12 @@ import com.intellij.psi.xml.XmlText;
 import org.apache.commons.collections.comparators.NullComparator;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.TreeSet;
 
 public class PomSorter implements ProjectComponent {
 // ------------------------------ FIELDS ------------------------------
@@ -184,9 +185,10 @@ public class PomSorter implements ProjectComponent {
         if (tag == null) {
             return;
         }
-        final TreeSet<XmlTag> xmlTags = new TreeSet<XmlTag>(comparator);
+        final List<XmlTag> xmlTags = new ArrayList<XmlTag>();
         final XmlTag[] subTags = tag.getSubTags();
         Collections.addAll(xmlTags, subTags);
+        Collections.sort(xmlTags, comparator);
         final XmlTagValue xmlTagValue = tag.getValue();
         final XmlTagChild[] children = xmlTagValue.getChildren();
         if (children.length > 0) {
@@ -197,8 +199,10 @@ public class PomSorter implements ProjectComponent {
             stringBuilder.append(xmlText.getText().trim());
         }
         tag.getValue().setText(stringBuilder.toString());
+        XmlTag previousChildTag = null;
         for (XmlTag childTag : xmlTags) {
-            tag.add(tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false));
+            final XmlTag xmlTag = tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false);
+            previousChildTag = (XmlTag) tag.addAfter(xmlTag, previousChildTag);
         }
     }
 
