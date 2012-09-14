@@ -1,10 +1,10 @@
 package pl.com.it_crowd.pom_sorter;
 
-import com.intellij.openapi.application.ApplicationManager;
+import com.intellij.openapi.application.Result;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiDocumentManager;
 import com.intellij.psi.XmlRecursiveElementVisitor;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.xml.XmlFile;
@@ -157,16 +157,14 @@ public class PomSorter implements ProjectComponent {
     {
         final XmlTag rootTag = xmlFile.getRootTag();
         if (rootTag != null) {
-            ApplicationManager.getApplication().runWriteAction(new Runnable() {
-                public void run()
+            new WriteCommandAction(project, "Sort POM", xmlFile) {
+                @Override
+                protected void run(Result result) throws Throwable
                 {
-                    final PsiDocumentManager psiDocumentManager = PsiDocumentManager.getInstance(project);
-                    psiDocumentManager.commitDocument(document);
                     xmlFile.accept(new PomSortVisitor());
                     CodeStyleManager.getInstance(rootTag.getProject()).reformat(rootTag);
-                    psiDocumentManager.commitDocument(document);
                 }
-            });
+            }.execute();
         }
     }
 
