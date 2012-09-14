@@ -3,10 +3,8 @@ package pl.com.it_crowd.pom_sorter;
 import com.intellij.lang.StdLanguages;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
-import com.intellij.openapi.actionSystem.DataKeys;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
-import com.intellij.openapi.editor.Editor;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiFile;
@@ -33,8 +31,7 @@ public class SortPomAction extends AnAction {
             Notifications.inform("Selected file is not XmlFile", "Please select POM.xml first", project);
             return;
         }
-        final Editor editor = DataKeys.EDITOR.getData(event.getDataContext());
-        project.getComponent(PomSorter.class).sortFile((XmlFile) xmlFile, editor == null ? null : editor.getDocument());
+        project.getComponent(PomSorter.class).sortFile((XmlFile) xmlFile);
     }
 
     @Override

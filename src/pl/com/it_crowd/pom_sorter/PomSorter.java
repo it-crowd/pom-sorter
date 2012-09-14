@@ -1,21 +1,29 @@
 package pl.com.it_crowd.pom_sorter;
 
+import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.application.Result;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ProjectComponent;
-import com.intellij.openapi.editor.Document;
 import com.intellij.openapi.project.Project;
+import com.intellij.openapi.util.Key;
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.XmlRecursiveElementVisitor;
 import com.intellij.psi.codeStyle.CodeStyleManager;
+import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlComment;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
 import com.intellij.psi.xml.XmlTagChild;
 import com.intellij.psi.xml.XmlTagValue;
 import com.intellij.psi.xml.XmlText;
+import com.intellij.util.IncorrectOperationException;
+import com.intellij.xml.util.XmlUtil;
 import org.apache.commons.collections.comparators.NullComparator;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,9 +35,13 @@ public class PomSorter implements ProjectComponent {
 
     private static final Map<String, Integer> BUILD_CHILDREN_PRIORITY = new HashMap<String, Integer>();
 
+    private static final Key<Collection<XmlComment>> COMMENT_KEY = Key.create("comment");
+
     private static final Map<String, Integer> DEPENDENCY_CHILDREN_PRIORITY = new HashMap<String, Integer>();
 
     private static final Map<String, Integer> EXECUTION_CHILDREN_PRIORITY = new HashMap<String, Integer>();
+
+    private static final Key<Collection<XmlComment>> INTERNAL_COMMENT_KEY = Key.create("internalComment");
 
     private static final Map<String, Integer> PLUGIN_CHILDREN_PRIORITY = new HashMap<String, Integer>();
 
@@ -113,6 +125,24 @@ public class PomSorter implements ProjectComponent {
         EXECUTION_CHILDREN_PRIORITY.put(null, i);
     }
 
+    @NotNull
+    private static XmlComment createComment(Project project, String commentText) throws IncorrectOperationException
+    {
+        final XmlTag element = XmlElementFactory.getInstance(project).createTagFromText("<foo><!--" + commentText + "--></foo>", XMLLanguage.INSTANCE);
+        final XmlComment newComment = PsiTreeUtil.getChildOfType(element, XmlComment.class);
+        assert newComment != null;
+        return newComment;
+    }
+
+    @NotNull
+    private static XmlText createText(Project project, String text) throws IncorrectOperationException
+    {
+        final XmlTag element = XmlElementFactory.getInstance(project).createTagFromText("<foo>" + text + "</foo>", XMLLanguage.INSTANCE);
+        final XmlText newText = PsiTreeUtil.getChildOfType(element, XmlText.class);
+        assert newText != null;
+        return newText;
+    }
+
 // --------------------------- CONSTRUCTORS ---------------------------
 
     public PomSorter(Project project)
@@ -153,7 +183,7 @@ public class PomSorter implements ProjectComponent {
 
 // -------------------------- OTHER METHODS --------------------------
 
-    public void sortFile(final XmlFile xmlFile, final Document document)
+    public void sortFile(final XmlFile xmlFile)
     {
         final XmlTag rootTag = xmlFile.getRootTag();
         if (rootTag != null) {
@@ -166,6 +196,20 @@ public class PomSorter implements ProjectComponent {
                 }
             }.execute();
         }
+    }
+
+    private PsiElement appendCommentsIfPresent(XmlTag tag, PsiElement previousPsiElement, Collection<XmlComment> comments)
+    {
+        if (comments != null) {
+            for (XmlComment comment : comments) {
+                if (!(previousPsiElement instanceof XmlText && previousPsiElement.getText().contains("\n"))) {
+                    previousPsiElement = tag.addAfter(createText(project, "\n"), previousPsiElement);
+                }
+                previousPsiElement = tag.addAfter(createComment(project, XmlUtil.getCommentText(comment)), previousPsiElement);
+                previousPsiElement = tag.addAfter(createText(project, "\n"), previousPsiElement);
+            }
+        }
+        return previousPsiElement;
     }
 
     private void sortBuild(XmlTag tag)
@@ -197,11 +241,13 @@ public class PomSorter implements ProjectComponent {
             stringBuilder.append(xmlText.getText().trim());
         }
         tag.getValue().setText(stringBuilder.toString());
-        XmlTag previousChildTag = null;
+        PsiElement previousPsiElement = null;
         for (XmlTag childTag : xmlTags) {
+            previousPsiElement = appendCommentsIfPresent(tag, previousPsiElement, childTag.getUserData(COMMENT_KEY));
             final XmlTag xmlTag = tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false);
-            previousChildTag = (XmlTag) tag.addAfter(xmlTag, previousChildTag);
+            previousPsiElement = tag.addAfter(xmlTag, previousPsiElement);
         }
+        appendCommentsIfPresent(tag, previousPsiElement, tag.getUserData(INTERNAL_COMMENT_KEY));
     }
 
     private void sortDependencies(XmlTag dependenciesTag)
@@ -302,6 +348,26 @@ public class PomSorter implements ProjectComponent {
 // -------------------------- OTHER METHODS --------------------------
 
         @Override
+        public void visitXmlComment(XmlComment comment)
+        {
+            super.visitXmlComment(comment);
+            XmlTag tagToAssignComment = null;
+            PsiElement sibling = comment;
+            do {
+                sibling = sibling.getNextSibling();
+                if (sibling instanceof XmlTag) {
+                    tagToAssignComment = (XmlTag) sibling;
+                    break;
+                }
+            } while (sibling != null);
+            if (tagToAssignComment == null) {
+                assignComment(comment.getParentTag(), comment, INTERNAL_COMMENT_KEY);
+            } else {
+                assignComment(tagToAssignComment, comment, COMMENT_KEY);
+            }
+        }
+
+        @Override
         public void visitXmlTag(XmlTag tag)
         {
             super.visitXmlTag(tag);
@@ -325,6 +391,19 @@ public class PomSorter implements ProjectComponent {
             } else {
                 sortByChildTagName(tag);
             }
+        }
+
+        private void assignComment(XmlTag tagToAssignComment, XmlComment comment, Key<Collection<XmlComment>> commentKey)
+        {
+            if (tagToAssignComment == null) {
+                return;
+            }
+            Collection<XmlComment> comments = tagToAssignComment.getUserData(commentKey);
+            if (comments == null) {
+                comments = new ArrayList<XmlComment>();
+                tagToAssignComment.putUserData(commentKey, comments);
+            }
+            comments.add(comment);
         }
     }
 
