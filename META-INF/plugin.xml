@@ -1,7 +1,7 @@
 <idea-plugin version="2">
     <name>Pom sorter</name>
     <description>Sorts contents of maven project descriptor</description>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <vendor email="contact@it-crowd.com.pl" url="http://it-crowd.com.pl">IT Crowd</vendor>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
@@ -23,4 +23,23 @@
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable instance="pl.com.it_crowd.pom_sorter.PomSorterConfigurable"/>
     </extensions>
+
+    <change-notes>
+        <![CDATA[
+        <ul>
+            <li>1.0.3<ul>
+                <li>Added default sorting mode for "dependencies"</li>
+            </ul></li>
+            <li>1.0.2<ul>
+                <li>Pom sorter should be configurable</li>
+            </ul></li>
+            <li>1.0.1<ul>
+                <li>Pom sorter should maintain comments</li>
+                <li>Pom sorting should be undoable</li>
+                <li>README</li>
+            </ul></li>
+            <li>1.0.0</li>
+        </ul>
+        ]]>
+    </change-notes>
 </idea-plugin>
