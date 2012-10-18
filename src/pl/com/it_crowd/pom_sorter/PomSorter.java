@@ -146,6 +146,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         this.project = project;
         if (order.isEmpty()) {
             order.put("project", new TagSortingSetting("project", SortMode.FIXED, DEFAULT_PROJECT_CHILDREN_PRIORITY));
+            order.put("dependencies", new TagSortingSetting("dependencies", SortMode.ARTIFACT, null));
             order.put("dependency", new TagSortingSetting("dependency", SortMode.FIXED, DEFAULT_DEPENDENCY_CHILDREN_PRIORITY));
             order.put("build", new TagSortingSetting("build", SortMode.FIXED, DEFAULT_BUILD_CHILDREN_PRIORITY));
             order.put("profile", new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
