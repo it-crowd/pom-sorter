@@ -2,7 +2,7 @@
     <name>Pom sorter</name>
     <description>Sorts contents of maven project descriptor</description>
     <version>1.0.4</version>
-    <vendor email="contact@it-crowd.com.pl" url="http://it-crowd.com.pl">IT Crowd</vendor>
+    <vendor email="contact@itcrowd.pl" url="http://itcrowd.pl">IT Crowd</vendor>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="107.105"/>
