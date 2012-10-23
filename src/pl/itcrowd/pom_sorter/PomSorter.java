@@ -1,4 +1,4 @@
-package pl.com.it_crowd.pom_sorter;
+package pl.itcrowd.pom_sorter;
 
 import com.intellij.lang.xml.XMLLanguage;
 import com.intellij.openapi.application.Result;

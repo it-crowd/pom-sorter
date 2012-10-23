@@ -1,32 +1,36 @@
 <idea-plugin version="2">
     <name>Pom sorter</name>
     <description>Sorts contents of maven project descriptor</description>
-    <version>1.0.4</version>
-    <vendor email="contact@itcrowd.pl" url="http://itcrowd.pl">IT Crowd</vendor>
+    <version>1.0.5</version>
+    <vendor email="contact@itcrowd.pl" url="http://itcrowd.pl" logo="/icons/pom-sorter-32x32.png">IT Crowd</vendor>
 
     <!-- please see http://confluence.jetbrains.net/display/IDEADEV/Build+Number+Ranges for description -->
     <idea-version since-build="107.105"/>
 
     <project-components>
         <component>
-            <implementation-class>pl.com.it_crowd.pom_sorter.PomSorter</implementation-class>
+            <implementation-class>pl.itcrowd.pom_sorter.PomSorter</implementation-class>
         </component>
     </project-components>
 
     <actions>
-        <action id="SortPOM" class="pl.com.it_crowd.pom_sorter.SortPomAction" text="Sort POM">
+        <action id="SortPOM" class="pl.itcrowd.pom_sorter.SortPomAction" text="Sort POM" icon="/icons/pom-sorter-16x16.png">
             <add-to-group group-id="ToolsXmlGroup"/>
             <add-to-group group-id="XmlGenerateToolsGroup" anchor="after" relative-to-action="Document2XSD"/>
         </action>
     </actions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable instance="pl.com.it_crowd.pom_sorter.PomSorterConfigurable"/>
+        <projectConfigurable instance="pl.itcrowd.pom_sorter.PomSorterConfigurable"/>
     </extensions>
 
     <change-notes>
         <![CDATA[
         <ul>
+            <li>1.0.5<ul>
+                <li>Repackag from pl.com.it_crowd to pl.itcrowd</li>
+                <li>Add icons</li>
+            </ul></li>
             <li>1.0.4<ul>
                 <li>NPE on project open</li>
             </ul></li>

@@ -1,4 +1,4 @@
-package pl.com.it_crowd.pom_sorter.ui;
+package pl.itcrowd.pom_sorter.ui;
 
 import com.intellij.ui.DocumentAdapter;
 import com.intellij.ui.EnumComboBoxModel;
@@ -7,7 +7,7 @@ import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import org.apache.commons.collections.comparators.NullComparator;
 import org.apache.commons.lang.StringUtils;
-import pl.com.it_crowd.pom_sorter.PomSorter;
+import pl.itcrowd.pom_sorter.PomSorter;
 
 import javax.swing.AbstractListModel;
 import javax.swing.ButtonGroup;

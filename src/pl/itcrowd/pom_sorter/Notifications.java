@@ -1,4 +1,4 @@
-package pl.com.it_crowd.pom_sorter;
+package pl.itcrowd.pom_sorter;
 
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;

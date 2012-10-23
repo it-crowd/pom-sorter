@@ -1,10 +1,10 @@
-package pl.com.it_crowd.pom_sorter;
+package pl.itcrowd.pom_sorter;
 
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
-import pl.com.it_crowd.pom_sorter.ui.SettingsForm;
+import pl.itcrowd.pom_sorter.ui.SettingsForm;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
