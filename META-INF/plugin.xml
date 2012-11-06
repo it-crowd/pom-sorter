@@ -1,7 +1,7 @@
 <idea-plugin version="2" url="https://github.com/it-crowd/pom-sorter">
     <name>Pom sorter</name>
     <description>Sorts contents of maven project descriptor</description>
-    <version>1.0.6-SNAPSHOT</version>
+    <version>1.0.6</version>
     <category>Formatting</category>
     <vendor email="contact@itcrowd.pl" url="http://itcrowd.pl" logo="/icons/pom-sorter-32x32.png">IT Crowd</vendor>
 
@@ -28,7 +28,7 @@
     <change-notes>
         <![CDATA[
         <ul>
-            <li>1.0.6-SNAPSHOT<ul>
+            <li>1.0.6<ul>
                 <li>Prevent removing tag attributes</li>
                 <li>Modify icons</li>
             </ul></li>
