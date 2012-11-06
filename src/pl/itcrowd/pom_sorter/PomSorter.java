@@ -13,6 +13,7 @@ import com.intellij.psi.XmlElementFactory;
 import com.intellij.psi.XmlRecursiveElementVisitor;
 import com.intellij.psi.codeStyle.CodeStyleManager;
 import com.intellij.psi.util.PsiTreeUtil;
+import com.intellij.psi.xml.XmlAttribute;
 import com.intellij.psi.xml.XmlComment;
 import com.intellij.psi.xml.XmlFile;
 import com.intellij.psi.xml.XmlTag;
@@ -287,7 +288,14 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         for (XmlTag childTag : xmlTags) {
             previousPsiElement = appendCommentsIfPresent(tag, previousPsiElement, childTag.getUserData(COMMENT_KEY));
             final XmlTag xmlTag = tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false);
+            for (XmlAttribute attribute : childTag.getAttributes()) {
+                xmlTag.setAttribute(attribute.getName(), attribute.getNamespace(), attribute.getValue());
+            }
             previousPsiElement = tag.addAfter(xmlTag, previousPsiElement);
+            final XmlTag newXmlTag = (XmlTag) previousPsiElement;
+            if (newXmlTag.getSubTags().length == 0 && newXmlTag.getValue().getChildren().length == 0) {
+                newXmlTag.collapseIfEmpty();
+            }
         }
         appendCommentsIfPresent(tag, previousPsiElement, tag.getUserData(INTERNAL_COMMENT_KEY));
     }
