@@ -287,17 +287,18 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         PsiElement previousPsiElement = null;
         for (XmlTag childTag : xmlTags) {
             previousPsiElement = appendCommentsIfPresent(tag, previousPsiElement, childTag.getUserData(COMMENT_KEY));
+            tag.putUserData(COMMENT_KEY, null);
             final XmlTag xmlTag = tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false);
             for (XmlAttribute attribute : childTag.getAttributes()) {
                 xmlTag.setAttribute(attribute.getName(), attribute.getNamespace(), attribute.getValue());
             }
             previousPsiElement = tag.addAfter(xmlTag, previousPsiElement);
-            final XmlTag newXmlTag = (XmlTag) previousPsiElement;
-            if (newXmlTag.getSubTags().length == 0 && newXmlTag.getValue().getChildren().length == 0) {
-                newXmlTag.collapseIfEmpty();
-            }
+        }
+        if (tag.getSubTags().length == 0 && tag.getValue().getChildren().length == 0) {
+            tag.collapseIfEmpty();
         }
         appendCommentsIfPresent(tag, previousPsiElement, tag.getUserData(INTERNAL_COMMENT_KEY));
+        tag.putUserData(INTERNAL_COMMENT_KEY, null);
     }
 
 // -------------------------- ENUMERATIONS --------------------------
