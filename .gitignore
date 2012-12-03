@@ -1,5 +1,5 @@
 .idea
 target
 *.iml
-*.jar
 out
+pom-sorter.jar

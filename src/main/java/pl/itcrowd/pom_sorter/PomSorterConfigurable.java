@@ -47,9 +47,11 @@ public class PomSorterConfigurable implements Configurable {
         return "Pom sorter";
     }
 
-    @Override
     public Icon getIcon()
     {
+        /**
+         * This method is required by Configurable interface in Idea 11 and is kept for compatibility
+         */
         return null;
     }
 

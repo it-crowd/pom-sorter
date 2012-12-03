@@ -336,7 +336,7 @@ public class SettingsForm {
         panel1.setLayout(new GridLayoutManager(7, 1, new Insets(0, 0, 0, 0), -1, -1));
         rootComponent.add(panel1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
-            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Tag name");
         panel1.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
@@ -373,7 +373,7 @@ public class SettingsForm {
         childTagList = new JList();
         scrollPane1.setViewportView(childTagList);
         addChildButton = new JButton();
-        addChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/addBig.png")));
+        addChildButton.setIcon(new ImageIcon(getClass().getResource("/general/add.png")));
         addChildButton.setText("");
         addChildButton.setToolTipText("Add");
         panel2.add(addChildButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
@@ -383,19 +383,19 @@ public class SettingsForm {
             new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null,
                 null, 0, false));
         removeChildButton = new JButton();
-        removeChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/removeBig.png")));
+        removeChildButton.setIcon(new ImageIcon(getClass().getResource("/general/remove.png")));
         removeChildButton.setText("");
         removeChildButton.setToolTipText("Remove");
         panel2.add(removeChildButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         upChildButton = new JButton();
-        upChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/upBig.png")));
+        upChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/moveUp.png")));
         upChildButton.setText("");
         upChildButton.setToolTipText("Up");
         panel2.add(upChildButton, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         downChildButton = new JButton();
-        downChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/downBig.png")));
+        downChildButton.setIcon(new ImageIcon(getClass().getResource("/actions/moveDown.png")));
         downChildButton.setText("");
         downChildButton.setToolTipText("Down");
         panel2.add(downChildButton, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
@@ -418,13 +418,13 @@ public class SettingsForm {
         tagList = new JList();
         scrollPane2.setViewportView(tagList);
         addButton = new JButton();
-        addButton.setIcon(new ImageIcon(getClass().getResource("/actions/addBig.png")));
+        addButton.setIcon(new ImageIcon(getClass().getResource("/general/add.png")));
         addButton.setText("");
         addButton.setToolTipText("Add");
         panel3.add(addButton, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         removeButton = new JButton();
-        removeButton.setIcon(new ImageIcon(getClass().getResource("/actions/removeBig.png")));
+        removeButton.setIcon(new ImageIcon(getClass().getResource("/general/remove.png")));
         removeButton.setText("");
         removeButton.setToolTipText("Remove");
         panel3.add(removeButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
@@ -465,7 +465,7 @@ public class SettingsForm {
         return rootComponent;
     }
 
-// -------------------------- INNER CLASSES --------------------------
+    // -------------------------- INNER CLASSES --------------------------
 
     private static class ChildTagListModel extends AbstractListModel implements PropertyChangeListener, ListDataListener, ListSelectionListener {
 // ------------------------------ FIELDS ------------------------------
