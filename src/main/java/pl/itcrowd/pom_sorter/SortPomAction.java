@@ -5,10 +5,14 @@ import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.LangDataKeys;
 import com.intellij.openapi.actionSystem.Presentation;
+import com.intellij.openapi.progress.ProgressIndicator;
+import com.intellij.openapi.progress.ProgressManager;
+import com.intellij.openapi.progress.Task;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiFile;
 import com.intellij.psi.xml.XmlFile;
+import org.jetbrains.annotations.NotNull;
 
 public class SortPomAction extends AnAction {
 // -------------------------- OTHER METHODS --------------------------
@@ -26,12 +30,17 @@ public class SortPomAction extends AnAction {
             Notifications.inform("No file selected", "Please select POM.xml first", project);
             return;
         }
-        final PsiFile xmlFile = psiFile.getViewProvider().getPsi(StdLanguages.XML);
-        if (xmlFile == null || !(xmlFile instanceof XmlFile)) {
-            Notifications.inform("Selected file is not XmlFile", "Please select POM.xml first", project);
-            return;
-        }
-        project.getComponent(PomSorter.class).sortFile((XmlFile) xmlFile);
+        ProgressManager.getInstance().run(new Task.Backgroundable(project, "Sorting file " + psiFile.getName(), false) {
+            public void run(@NotNull ProgressIndicator progressIndicator)
+            {
+                final PsiFile xmlFile = psiFile.getViewProvider().getPsi(StdLanguages.XML);
+                if (xmlFile == null || !(xmlFile instanceof XmlFile)) {
+                    Notifications.inform("Selected file is not XmlFile", "Please select POM.xml first", project);
+                    return;
+                }
+                project.getComponent(PomSorter.class).sortFile((XmlFile) xmlFile);
+            }
+        });
     }
 
     @Override
