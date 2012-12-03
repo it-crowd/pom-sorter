@@ -6,7 +6,6 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
 import pl.itcrowd.pom_sorter.ui.SettingsForm;
 
-import javax.swing.Icon;
 import javax.swing.JComponent;
 
 public class PomSorterConfigurable implements Configurable {
@@ -45,12 +44,6 @@ public class PomSorterConfigurable implements Configurable {
     public String getDisplayName()
     {
         return "Pom sorter";
-    }
-
-    @Override
-    public Icon getIcon()
-    {
-        return null;
     }
 
     @Override
