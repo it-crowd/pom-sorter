@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
 import pl.itcrowd.pom_sorter.ui.SettingsForm;
 
+import javax.swing.Icon;
 import javax.swing.JComponent;
 
 public class PomSorterConfigurable implements Configurable {
@@ -44,6 +45,14 @@ public class PomSorterConfigurable implements Configurable {
     public String getDisplayName()
     {
         return "Pom sorter";
+    }
+
+    public Icon getIcon()
+    {
+        /**
+         * This method is required by Configurable interface in Idea 11 and is kept for compatibility
+         */
+        return null;
     }
 
     @Override
