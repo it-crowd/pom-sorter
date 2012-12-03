@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.PatternSyntaxException;
 
 @com.intellij.openapi.components.State(
     name = PomSorter.COMPONENT_NAME,
@@ -108,16 +109,13 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("version");
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("scope");
         DEFAULT_PLUGIN_CHILDREN_PRIORITY.addAll(DEFAULT_DEPENDENCY_CHILDREN_PRIORITY);
-
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("finalName");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("resources");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("testResources");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("filters");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("pluginManagement");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("plugins");
-
         DEFAULT_PROFILE_CHILDREN_PRIORITY.add("id");
-
         DEFAULT_EXECUTION_CHILDREN_PRIORITY.add("id");
         DEFAULT_EXECUTION_CHILDREN_PRIORITY.add("phase");
     }
@@ -200,6 +198,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
     @Override
     public void loadState(State state)
     {
+        defaultSortMode = state.defaultSortMode;
         order.clear();
         for (TagSortingSetting setting : state.order) {
             order.put(setting.getName(), setting);
@@ -287,10 +286,13 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         PsiElement previousPsiElement = null;
         for (XmlTag childTag : xmlTags) {
             previousPsiElement = appendCommentsIfPresent(tag, previousPsiElement, childTag.getUserData(COMMENT_KEY));
-            tag.putUserData(COMMENT_KEY, null);
+            childTag.putUserData(COMMENT_KEY, null);
             final XmlTag xmlTag = tag.createChildTag(childTag.getName(), null, childTag.getValue().getText(), false);
             for (XmlAttribute attribute : childTag.getAttributes()) {
                 xmlTag.setAttribute(attribute.getName(), attribute.getNamespace(), attribute.getValue());
+            }
+            if (xmlTag.getSubTags().length == 0 && xmlTag.getValue().getChildren().length == 0) {
+                xmlTag.collapseIfEmpty();
             }
             previousPsiElement = tag.addAfter(xmlTag, previousPsiElement);
         }
@@ -406,8 +408,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         public void visitXmlTag(XmlTag tag)
         {
             super.visitXmlTag(tag);
-            final String tagName = tag.getName();
-            TagSortingSetting tagSortingSetting = order.get(tagName);
+            TagSortingSetting tagSortingSetting = getSortingSetting(tag);
             SortMode mode = tagSortingSetting == null ? getDefaultSortMode() : tagSortingSetting.getMode();
             if (SortMode.ALPHABETIC.equals(mode)) {
                 sortChildren(tag, tagNameComparator);
@@ -417,6 +418,42 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
             } else if (SortMode.ARTIFACT.equals(mode)) {
                 sortChildren(tag, artifactComparator);
             }
+        }
+
+        private String getPath(XmlTag tag)
+
+        {
+            return (tag.getParentTag() == null ? "" : getPath(tag.getParentTag())) + "/" + tag.getName();
+        }
+
+        private TagSortingSetting getSortingSetting(XmlTag tag)
+        {
+            TagSortingSetting tagSortingSetting = null;
+            final String path = getPath(tag);
+            final String tagName = tag.getName();
+            for (Map.Entry<String, TagSortingSetting> entry : order.entrySet()) {
+                String pattern = entry.getKey()
+                    .replaceAll("^\\*/", "[^/]*/")
+                    .replaceAll("/\\*/", "/[^/]*/")
+                    .replaceAll("/\\*$", "/[^/]*")
+                    .replaceAll("^\\*\\*/", ".*/")
+                    .replaceAll("/\\*\\*/", "/.*/")
+                    .replaceAll("/\\*\\*$", "/.*");
+                final boolean matches;
+                try {
+                    matches = path.matches(pattern);
+                } catch (PatternSyntaxException e) {
+                    Notifications.inform(String.format("Invalid pattern '%s' for tag %s", entry.getKey(), tagName), "Please select POM.xml first", project);
+                    break;
+                }
+                if (matches) {
+                    tagSortingSetting = entry.getValue();
+                }
+            }
+            if (null == tagSortingSetting) {
+                tagSortingSetting = order.get(tagName);
+            }
+            return tagSortingSetting;
         }
     }
 
