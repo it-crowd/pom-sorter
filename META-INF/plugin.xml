@@ -12,6 +12,9 @@
         <component>
             <implementation-class>pl.itcrowd.pom_sorter.PomSorter</implementation-class>
         </component>
+        <component>
+            <implementation-class>pl.itcrowd.pom_sorter.PomSorterConfigurable</implementation-class>
+        </component>
     </project-components>
 
     <actions>
@@ -21,15 +24,15 @@
         </action>
     </actions>
 
-    <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable instance="pl.itcrowd.pom_sorter.PomSorterConfigurable"/>
-    </extensions>
-
     <change-notes>
         <![CDATA[
         <ul>
             <li>1.0.7-SNAPSHOT<ul>
+                <li>#6 not open settings page</li>
+                <li>#5 Sorting should be done asynchronously </li>
                 <li>#4 Expending children of not sorted tag</li>
+                <li>#3 Pattern-like tag selectors</li>
+                <li>#2 NCDFE org.apache.commons.collections.comparators.NullComparator</li>
                 <li>Multiple sort multiplies comments</li>
             </ul></li>
             <li>1.0.6<ul>

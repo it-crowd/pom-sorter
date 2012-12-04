@@ -1,5 +1,6 @@
 .idea
 target
 *.iml
+*.zip
 out
 pom-sorter.jar

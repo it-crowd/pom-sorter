@@ -1,16 +1,20 @@
 package pl.itcrowd.pom_sorter;
 
+import com.intellij.openapi.components.ProjectComponent;
 import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.Nls;
+import org.jetbrains.annotations.NotNull;
 import pl.itcrowd.pom_sorter.ui.SettingsForm;
 
 import javax.swing.Icon;
 import javax.swing.JComponent;
 
-public class PomSorterConfigurable implements Configurable {
+public class PomSorterConfigurable implements Configurable, ProjectComponent {
 // ------------------------------ FIELDS ------------------------------
+
+    public static final String COMPONENT_NAME = "PomSorterConfigurable";
 
     private Project project;
 
@@ -18,7 +22,7 @@ public class PomSorterConfigurable implements Configurable {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public PomSorterConfigurable(Project project)
+    public PomSorterConfigurable(@NotNull Project project)
     {
         this.project = project;
     }
@@ -37,6 +41,18 @@ public class PomSorterConfigurable implements Configurable {
 
 // ------------------------ INTERFACE METHODS ------------------------
 
+
+// --------------------- Interface BaseComponent ---------------------
+
+    @Override
+    public void initComponent()
+    {
+    }
+
+    @Override
+    public void disposeComponent()
+    {
+    }
 
 // --------------------- Interface Configurable ---------------------
 
@@ -59,6 +75,27 @@ public class PomSorterConfigurable implements Configurable {
     public String getHelpTopic()
     {
         return null;
+    }
+
+// --------------------- Interface NamedComponent ---------------------
+
+    @NotNull
+    @Override
+    public String getComponentName()
+    {
+        return COMPONENT_NAME;
+    }
+
+// --------------------- Interface ProjectComponent ---------------------
+
+    @Override
+    public void projectOpened()
+    {
+    }
+
+    @Override
+    public void projectClosed()
+    {
     }
 
 // --------------------- Interface UnnamedConfigurable ---------------------
