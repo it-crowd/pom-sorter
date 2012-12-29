@@ -54,6 +54,8 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
 
     private static final List<String> DEFAULT_PLUGIN_CHILDREN_PRIORITY = new ArrayList<String>();
 
+    private static final List<String> DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY = new ArrayList<String>();
+
     private static final List<String> DEFAULT_PROFILE_CHILDREN_PRIORITY = new ArrayList<String>();
 
     private static final List<String> DEFAULT_PROJECT_CHILDREN_PRIORITY = new ArrayList<String>();
@@ -109,6 +111,8 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("version");
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("scope");
         DEFAULT_PLUGIN_CHILDREN_PRIORITY.addAll(DEFAULT_DEPENDENCY_CHILDREN_PRIORITY);
+        DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY.add("id");
+        DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY.add("url");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("finalName");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("resources");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("testResources");
@@ -154,6 +158,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
             order.put("profile", new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
             order.put("execution", new TagSortingSetting("execution", SortMode.FIXED, DEFAULT_EXECUTION_CHILDREN_PRIORITY));
             order.put("plugin", new TagSortingSetting("plugin", SortMode.FIXED, DEFAULT_PLUGIN_CHILDREN_PRIORITY));
+            order.put("pluginRepository", new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
         }
     }
 
