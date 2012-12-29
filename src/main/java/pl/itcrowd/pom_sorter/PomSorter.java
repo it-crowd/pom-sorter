@@ -123,6 +123,9 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
     @NotNull
     private static XmlComment createComment(Project project, String commentText) throws IncorrectOperationException
     {
+        if (null == commentText) {
+            commentText = "";
+        }
         final XmlTag element = XmlElementFactory.getInstance(project).createTagFromText("<foo><!--" + commentText + "--></foo>", XMLLanguage.INSTANCE);
         final XmlComment newComment = PsiTreeUtil.getChildOfType(element, XmlComment.class);
         assert newComment != null;

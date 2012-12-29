@@ -138,6 +138,32 @@ public class PomSorterTest extends PsiTestCase {
     }
 
     /**
+     * Check proper handling of empty comments.
+     * Initial and expected contents:
+     * <pre>
+     * &lt;?xml version="1.0" encoding="UTF-8"?>
+     * &lt;project>
+     *     &lt;!---->
+     *     &lt;target/>
+     * &lt;/project>
+     * </pre>
+     */
+    public void testSortWithEmptyComment()
+    {
+//        Given
+        final String pomContents = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + "<project>\n" + "    <!---->\n" + "    <target/>\n" + "</project>\n";
+        final PomSorter pomSorter = new PomSorter(getProject());
+        final PsiFile psiFile = super.createDummyFile("pom.xml", pomContents);
+        final XmlFile xmlFile = (XmlFile) psiFile.getViewProvider().getPsi(StdLanguages.XML);
+
+//        When
+        pomSorter.sortFile(xmlFile);
+
+//        Then
+        assertEquals(pomContents, xmlFile.getText());
+    }
+
+    /**
      * Default sort mode is alphabetic and "target" should not be sorted.
      * Expected result is that target remains unsorted, but "other" gets sorted.
      * Initial contents:
