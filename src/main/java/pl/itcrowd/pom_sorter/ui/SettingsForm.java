@@ -78,7 +78,15 @@ public class SettingsForm {
 
     private boolean settingCleanName;
 
+    private JRadioButton sortByAttributeRadioButton;
+
+    private JTextField sortByAttributeTextField;
+
     private JRadioButton sortByGroupIdArtifactIdRadioButton;
+
+    private JRadioButton sortBySubtagRadioButton;
+
+    private JTextField sortBySubtagTextField;
 
     private JRadioButton sortByTagNameRadioButton;
 
@@ -110,10 +118,44 @@ public class SettingsForm {
             protected void textChanged(DocumentEvent documentEvent)
             {
                 modified |= !settingCleanName;
+                if (settingCleanName) {
+                    return;
+                }
                 PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+
 
                 if (setting != null) {
                     setting.setName(tagNameTextField.getText());
+                }
+            }
+        });
+        sortByAttributeTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(DocumentEvent documentEvent)
+            {
+                modified |= !settingCleanName;
+                if (settingCleanName) {
+                    return;
+                }
+                PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+
+                if (setting != null) {
+                    setting.setAttributeName(sortByAttributeTextField.getText());
+                }
+            }
+        });
+        sortBySubtagTextField.getDocument().addDocumentListener(new DocumentAdapter() {
+            @Override
+            protected void textChanged(DocumentEvent documentEvent)
+            {
+                modified |= !settingCleanName;
+                if (settingCleanName) {
+                    return;
+                }
+                PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+
+                if (setting != null) {
+                    setting.setAttributeName(sortBySubtagTextField.getText());
                 }
             }
         });
@@ -129,17 +171,26 @@ public class SettingsForm {
                 currentSettingPropertyChangeListener.attachTo(setting);
                 settingCleanName = true;
                 tagNameTextField.setText(setting == null ? "" : setting.getName());
+                sortByAttributeTextField.setText("");
+                sortBySubtagTextField.setText("");
+                if (null != setting && PomSorter.SortMode.ATTRIBUTE.equals(setting.getMode())) {
+                    sortByAttributeTextField.setText(setting.getAttributeName());
+                } else if (null != setting && PomSorter.SortMode.SUBTAG.equals(setting.getMode())) {
+                    sortBySubtagTextField.setText(setting.getAttributeName());
+                }
                 settingCleanName = false;
                 fixedOrderRadioButton.setSelected(setting != null && PomSorter.SortMode.FIXED.equals(setting.getMode()));
                 dontSortRadioButton.setSelected(setting != null && PomSorter.SortMode.NONE.equals(setting.getMode()));
                 sortByTagNameRadioButton.setSelected(setting != null && PomSorter.SortMode.ALPHABETIC.equals(setting.getMode()));
                 sortByGroupIdArtifactIdRadioButton.setSelected(setting != null && PomSorter.SortMode.ARTIFACT.equals(setting.getMode()));
+                sortByAttributeRadioButton.setSelected(setting != null && PomSorter.SortMode.ATTRIBUTE.equals(setting.getMode()));
+                sortBySubtagRadioButton.setSelected(setting != null && PomSorter.SortMode.SUBTAG.equals(setting.getMode()));
                 tagNameTextField.setEnabled(setting != null);
                 fixedOrderRadioButton.setEnabled(setting != null);
                 dontSortRadioButton.setEnabled(setting != null);
                 sortByGroupIdArtifactIdRadioButton.setEnabled(setting != null);
                 sortByTagNameRadioButton.setEnabled(setting != null);
-                sortByTagNameRadioButton.setEnabled(setting != null);
+                sortByAttributeRadioButton.setEnabled(setting != null);
                 updateTagsControls();
                 updateChildControls();
             }
@@ -172,6 +223,10 @@ public class SettingsForm {
                         setting.setMode(PomSorter.SortMode.ALPHABETIC);
                     } else if (sortByGroupIdArtifactIdRadioButton.equals(e.getSource()) && sortByGroupIdArtifactIdRadioButton.isSelected()) {
                         setting.setMode(PomSorter.SortMode.ARTIFACT);
+                    } else if (sortByAttributeRadioButton.equals(e.getSource()) && sortByAttributeRadioButton.isSelected()) {
+                        setting.setMode(PomSorter.SortMode.ATTRIBUTE);
+                    } else if (sortBySubtagRadioButton.equals(e.getSource()) && sortBySubtagRadioButton.isSelected()) {
+                        setting.setMode(PomSorter.SortMode.SUBTAG);
                     }
                 }
             }
@@ -180,6 +235,8 @@ public class SettingsForm {
         dontSortRadioButton.addChangeListener(modeRadioButtonChangeListener);
         sortByGroupIdArtifactIdRadioButton.addChangeListener(modeRadioButtonChangeListener);
         sortByTagNameRadioButton.addChangeListener(modeRadioButtonChangeListener);
+        sortByAttributeRadioButton.addChangeListener(modeRadioButtonChangeListener);
+        sortBySubtagRadioButton.addChangeListener(modeRadioButtonChangeListener);
 
 
         addChildButton.addActionListener(new ActionListener() {
@@ -265,12 +322,7 @@ public class SettingsForm {
 
     // --------------------- GETTER / SETTER METHODS ---------------------
 
-    public boolean isModified()
-    {
-        return modified;
-    }
-
-// -------------------------- OTHER METHODS --------------------------
+    // -------------------------- OTHER METHODS --------------------------
 
     public void apply()
     {
@@ -285,6 +337,11 @@ public class SettingsForm {
         modified = false;
     }
 
+    public boolean isModified()
+    {
+        return modified;
+    }
+
     public void reset()
     {
         tagListModel.clear();
@@ -293,25 +350,6 @@ public class SettingsForm {
         }
         defaultSortModeComboBox.setSelectedItem(pomSorter.getDefaultSortMode());
         modified = false;
-    }
-
-    private void updateChildControls()
-    {
-        final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
-        final StringHolder currentChild = childTagListModel.getCurrentElement();
-        final boolean sortingMode = setting != null && PomSorter.SortMode.FIXED.equals(setting.getMode());
-        childTagList.setEnabled(sortingMode);
-        addChildButton.setEnabled(sortingMode);
-        editChildButton.setEnabled(sortingMode && currentChild != null);
-        removeChildButton.setEnabled(sortingMode && currentChild != null);
-        upChildButton.setEnabled(sortingMode && currentChild != null && !childTagListModel.isFirstSelected());
-        downChildButton.setEnabled(sortingMode && currentChild != null && !childTagListModel.isLastSelected());
-    }
-
-    private void updateTagsControls()
-    {
-        final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
-        removeButton.setEnabled(setting != null);
     }
 
     {
@@ -333,37 +371,37 @@ public class SettingsForm {
         rootComponent = new JPanel();
         rootComponent.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         final JPanel panel1 = new JPanel();
-        panel1.setLayout(new GridLayoutManager(7, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel1.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
         rootComponent.add(panel1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final JLabel label1 = new JLabel();
         label1.setText("Tag name");
-        panel1.add(label1, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
+        panel1.add(label1, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED,
             GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         tagNameTextField = new JTextField();
         panel1.add(tagNameTextField,
-            new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
+            new GridConstraints(1, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW,
                 GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         sortByTagNameRadioButton = new JRadioButton();
         sortByTagNameRadioButton.setText("Sort by tag name and value");
-        panel1.add(sortByTagNameRadioButton, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+        panel1.add(sortByTagNameRadioButton, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         dontSortRadioButton = new JRadioButton();
         dontSortRadioButton.setText("Don't sort");
-        panel1.add(dontSortRadioButton, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+        panel1.add(dontSortRadioButton, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         fixedOrderRadioButton = new JRadioButton();
         fixedOrderRadioButton.setText("Fixed order");
-        panel1.add(fixedOrderRadioButton, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+        panel1.add(fixedOrderRadioButton, new GridConstraints(7, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         sortByGroupIdArtifactIdRadioButton = new JRadioButton();
         sortByGroupIdArtifactIdRadioButton.setText("Sort by GroupId:ArtifactId");
-        panel1.add(sortByGroupIdArtifactIdRadioButton, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+        panel1.add(sortByGroupIdArtifactIdRadioButton, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final JPanel panel2 = new JPanel();
         panel2.setLayout(new GridLayoutManager(6, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel1.add(panel2, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
+        panel1.add(panel2, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final JScrollPane scrollPane1 = new JScrollPane();
@@ -406,6 +444,22 @@ public class SettingsForm {
         editChildButton.setToolTipText("Edit");
         panel2.add(editChildButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sortByAttributeRadioButton = new JRadioButton();
+        sortByAttributeRadioButton.setText("Sort by attribute");
+        panel1.add(sortByAttributeRadioButton, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sortByAttributeTextField = new JTextField();
+        panel1.add(sortByAttributeTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL,
+            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null,
+            0, false));
+        sortBySubtagRadioButton = new JRadioButton();
+        sortBySubtagRadioButton.setText("Sort by child tag");
+        panel1.add(sortBySubtagRadioButton, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE,
+            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        sortBySubtagTextField = new JTextField();
+        panel1.add(sortBySubtagTextField, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL,
+            GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null,
+            0, false));
         final JPanel panel3 = new JPanel();
         panel3.setLayout(new GridLayoutManager(6, 2, new Insets(0, 0, 0, 0), -1, -1));
         rootComponent.add(panel3, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
@@ -455,6 +509,8 @@ public class SettingsForm {
         buttonGroup.add(sortByTagNameRadioButton);
         buttonGroup.add(dontSortRadioButton);
         buttonGroup.add(sortByGroupIdArtifactIdRadioButton);
+        buttonGroup.add(sortByAttributeRadioButton);
+        buttonGroup.add(sortBySubtagRadioButton);
     }
 
     /**
@@ -465,6 +521,27 @@ public class SettingsForm {
         return rootComponent;
     }
 
+    private void updateChildControls()
+    {
+        final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+        final StringHolder currentChild = childTagListModel.getCurrentElement();
+        final boolean sortingMode = setting != null && PomSorter.SortMode.FIXED.equals(setting.getMode());
+        childTagList.setEnabled(sortingMode);
+        addChildButton.setEnabled(sortingMode);
+        editChildButton.setEnabled(sortingMode && currentChild != null);
+        removeChildButton.setEnabled(sortingMode && currentChild != null);
+        upChildButton.setEnabled(sortingMode && currentChild != null && !childTagListModel.isFirstSelected());
+        downChildButton.setEnabled(sortingMode && currentChild != null && !childTagListModel.isLastSelected());
+        sortByAttributeTextField.setEnabled(setting != null && PomSorter.SortMode.ATTRIBUTE.equals(setting.getMode()));
+        sortBySubtagTextField.setEnabled(setting != null && PomSorter.SortMode.SUBTAG.equals(setting.getMode()));
+    }
+
+    private void updateTagsControls()
+    {
+        final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+        removeButton.setEnabled(setting != null);
+    }
+
     // -------------------------- INNER CLASSES --------------------------
 
     private static class ChildTagListModel extends AbstractListModel implements PropertyChangeListener, ListDataListener, ListSelectionListener {
@@ -472,11 +549,11 @@ public class SettingsForm {
 
         public static final String PROPERTY_CURRENT_ELEMENT = "currentElement";
 
+        private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
         private JList childTagList;
 
         private Integer childTagSelectionIndex;
-
-        private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
         private TagListModel tagListModel;
 
@@ -496,37 +573,9 @@ public class SettingsForm {
 
 // --------------------- Interface ListDataListener ---------------------
 
-        @Override
-        public void intervalAdded(ListDataEvent e)
+        public StringHolder getCurrentElement()
         {
-            fireIntervalAdded(this, e.getIndex0(), e.getIndex1());
-        }
-
-        @Override
-        public void intervalRemoved(ListDataEvent e)
-        {
-            int index = e.getIndex0();
-            fireIntervalRemoved(this, index, e.getIndex1());
-            final int size = getSize();
-            if (size > 0) {
-                index = Math.min(size - 1, index);
-                childTagList.setSelectionInterval(index, index);
-            }
-        }
-
-        @Override
-        public void contentsChanged(ListDataEvent e)
-        {
-            fireContentsChanged(this, e.getIndex0(), e.getIndex1());
-        }
-
-// --------------------- Interface ListModel ---------------------
-
-        @Override
-        public int getSize()
-        {
-            final PresentableTagSortingSetting currentElement = tagListModel.getCurrentElement();
-            return currentElement == null ? 0 : currentElement.getOrder().size();
+            return childTagSelectionIndex == null ? null : getElementAt(childTagSelectionIndex);
         }
 
         @Override
@@ -541,17 +590,85 @@ public class SettingsForm {
             }
         }
 
+        @Override
+        public int getSize()
+        {
+            final PresentableTagSortingSetting currentElement = tagListModel.getCurrentElement();
+            return currentElement == null ? 0 : currentElement.getOrder().size();
+        }
+
+// --------------------- Interface ListModel ---------------------
+
+        public void add(String name)
+        {
+            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+            if (setting == null) {
+                return;
+            }
+            int index = childTagSelectionIndex == null ? setting.getOrder().size() : childTagSelectionIndex + 1;
+            setting.addChildTag(index, name);
+            getElementAt(index).addPropertyChangeListener(StringHolder.PROPERTY_VALUE, this);
+            fireIntervalAdded(this, index, index);
+            childTagList.setSelectionInterval(index, index);
+        }
+
+        public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
+        {
+            propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
+        }
+
 // --------------------- Interface ListSelectionListener ---------------------
 
         @Override
-        public void valueChanged(ListSelectionEvent e)
+        public void contentsChanged(ListDataEvent e)
         {
-            if (!e.getValueIsAdjusting()) {
-                setChildTagSelectionIndex(childTagList.isSelectionEmpty() ? null : ((ListSelectionModel) e.getSource()).getLeadSelectionIndex());
-            }
+            fireContentsChanged(this, e.getIndex0(), e.getIndex1());
         }
 
 // --------------------- Interface PropertyChangeListener ---------------------
+
+        @Override
+        public void intervalAdded(ListDataEvent e)
+        {
+            fireIntervalAdded(this, e.getIndex0(), e.getIndex1());
+        }
+
+// -------------------------- OTHER METHODS --------------------------
+
+        @Override
+        public void intervalRemoved(ListDataEvent e)
+        {
+            int index = e.getIndex0();
+            fireIntervalRemoved(this, index, e.getIndex1());
+            final int size = getSize();
+            if (size > 0) {
+                index = Math.min(size - 1, index);
+                childTagList.setSelectionInterval(index, index);
+            }
+        }
+
+        public void moveCurrentElementDown()
+        {
+            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+            if (setting == null || childTagSelectionIndex == null || isLastSelected()) {
+                return;
+            }
+            final int anchor = Math.min(setting.getOrder().size() - 1, childTagSelectionIndex + 1);
+            final StringHolder removed = setting.removeChildTag(childTagSelectionIndex);
+            setting.addChildTag(anchor, removed.getValue());
+            childTagList.setSelectionInterval(anchor, anchor);
+        }
+
+        public void moveCurrentElementUp()
+        {
+            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
+            if (setting == null || childTagSelectionIndex == null || isFirstSelected()) {
+                return;
+            }
+            final int anchor = Math.max(0, childTagSelectionIndex - 1);
+            setting.addChildTag(anchor, setting.removeChildTag(childTagSelectionIndex).getValue());
+            childTagList.setSelectionInterval(anchor, anchor);
+        }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt)
@@ -580,60 +697,20 @@ public class SettingsForm {
             }
         }
 
-// -------------------------- OTHER METHODS --------------------------
-
-        public void add(String name)
-        {
-            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
-            if (setting == null) {
-                return;
-            }
-            int index = childTagSelectionIndex == null ? setting.getOrder().size() : childTagSelectionIndex + 1;
-            setting.addChildTag(index, name);
-            getElementAt(index).addPropertyChangeListener(StringHolder.PROPERTY_VALUE, this);
-            fireIntervalAdded(this, index, index);
-            childTagList.setSelectionInterval(index, index);
-        }
-
-        public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener)
-        {
-            propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
-        }
-
-        public StringHolder getCurrentElement()
-        {
-            return childTagSelectionIndex == null ? null : getElementAt(childTagSelectionIndex);
-        }
-
-        public void moveCurrentElementDown()
-        {
-            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
-            if (setting == null || childTagSelectionIndex == null || isLastSelected()) {
-                return;
-            }
-            final int anchor = Math.min(setting.getOrder().size() - 1, childTagSelectionIndex + 1);
-            final StringHolder removed = setting.removeChildTag(childTagSelectionIndex);
-            setting.addChildTag(anchor, removed.getValue());
-            childTagList.setSelectionInterval(anchor, anchor);
-        }
-
-        public void moveCurrentElementUp()
-        {
-            final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
-            if (setting == null || childTagSelectionIndex == null || isFirstSelected()) {
-                return;
-            }
-            final int anchor = Math.max(0, childTagSelectionIndex - 1);
-            setting.addChildTag(anchor, setting.removeChildTag(childTagSelectionIndex).getValue());
-            childTagList.setSelectionInterval(anchor, anchor);
-        }
-
         public void removeCurrentElement()
         {
             final PresentableTagSortingSetting setting = tagListModel.getCurrentElement();
             if (setting != null && childTagSelectionIndex != null) {
                 setting.getOrder().get(childTagSelectionIndex).removePropertyChangeListener(StringHolder.PROPERTY_VALUE, this);
                 setting.removeChildTag(childTagSelectionIndex);
+            }
+        }
+
+        @Override
+        public void valueChanged(ListSelectionEvent e)
+        {
+            if (!e.getValueIsAdjusting()) {
+                setChildTagSelectionIndex(childTagList.isSelectionEmpty() ? null : ((ListSelectionModel) e.getSource()).getLeadSelectionIndex());
             }
         }
 
@@ -657,40 +734,6 @@ public class SettingsForm {
         }
     }
 
-    private class CurrentSettingPropertyChangeListener implements PropertyChangeListener {
-// ------------------------------ FIELDS ------------------------------
-
-        private PresentableTagSortingSetting currentSetting;
-
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface PropertyChangeListener ---------------------
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-            if (PresentableTagSortingSetting.PROPERTY_MODE.equals(evt.getPropertyName())) {
-                updateChildControls();
-            }
-        }
-
-// -------------------------- OTHER METHODS --------------------------
-
-        public void attachTo(PresentableTagSortingSetting setting)
-        {
-            if (currentSetting != null) {
-                currentSetting.removePropertyChangeListener(PresentableTagSortingSetting.PROPERTY_NAME, this);
-                currentSetting.removePropertyChangeListener(PresentableTagSortingSetting.PROPERTY_MODE, this);
-            }
-            this.currentSetting = setting;
-            if (this.currentSetting != null) {
-                currentSetting.addPropertyChangeListener(PresentableTagSortingSetting.PROPERTY_NAME, this);
-                currentSetting.addPropertyChangeListener(PresentableTagSortingSetting.PROPERTY_MODE, this);
-            }
-        }
-    }
-
     public static class PresentableTagSortingSetting implements Comparable<PresentableTagSortingSetting> {
 // ------------------------------ FIELDS ------------------------------
 
@@ -698,21 +741,23 @@ public class SettingsForm {
 
         public static final String PROPERTY_NAME = "name";
 
-        private List<ListDataListener> listeners = new ArrayList<ListDataListener>();
-
-        private PomSorter.SortMode mode;
-
-        private String name;
-
         private final NullComparator nullComparator = new NullComparator();
 
         private final List<StringHolder> order;
 
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-        private PomSorter.TagSortingSetting setting;
-
         private final List<StringHolder> unmodifiableOrder;
+
+        private String attributeName;
+
+        private List<ListDataListener> listeners = new ArrayList<ListDataListener>();
+
+        private PomSorter.SortMode mode;
+
+        private String name;
+
+        private PomSorter.TagSortingSetting setting;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -721,6 +766,7 @@ public class SettingsForm {
             this.setting = setting;
             setMode(setting.getMode());
             setName(setting.getName());
+            setAttributeName(setting.getAttributeName());
             order = new ArrayList<StringHolder>();
             for (String element : setting.getOrder()) {
                 order.add(new StringHolder(element));
@@ -736,24 +782,35 @@ public class SettingsForm {
             unmodifiableOrder = Collections.unmodifiableList(order);
         }
 
+        public String getAttributeName()
+        {
+            return attributeName;
+        }
+
 // --------------------- GETTER / SETTER METHODS ---------------------
+
+        public void setAttributeName(String attributeName)
+        {
+            this.attributeName = attributeName;
+        }
 
         public PomSorter.SortMode getMode()
         {
             return mode;
         }
 
-        public String getName()
+        public void setMode(PomSorter.SortMode mode)
         {
-            return name;
+            Object oldValue = this.mode;
+            this.mode = mode;
+            propertyChangeSupport.firePropertyChange(PROPERTY_MODE, oldValue, this.mode);
         }
 
 // ------------------------ CANONICAL METHODS ------------------------
 
-        @Override
-        public String toString()
+        public String getName()
         {
-            return getName();
+            return name;
         }
 
 // ------------------------ INTERFACE METHODS ------------------------
@@ -761,13 +818,19 @@ public class SettingsForm {
 
 // --------------------- Interface Comparable ---------------------
 
-        @Override
-        public int compareTo(PresentableTagSortingSetting o)
+        public void setName(String name)
         {
-            return nullComparator.compare(getName(), o.getName());
+            Object oldValue = this.name;
+            this.name = name;
+            propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldValue, this.name);
         }
 
 // -------------------------- OTHER METHODS --------------------------
+
+        public List<StringHolder> getOrder()
+        {
+            return unmodifiableOrder;
+        }
 
         public void addChildTag(int index, String tag)
         {
@@ -788,9 +851,10 @@ public class SettingsForm {
             propertyChangeSupport.addPropertyChangeListener(propertyName, listener);
         }
 
-        public List<StringHolder> getOrder()
+        @Override
+        public int compareTo(PresentableTagSortingSetting o)
         {
-            return unmodifiableOrder;
+            return nullComparator.compare(getName(), o.getName());
         }
 
         public StringHolder removeChildTag(int index)
@@ -813,18 +877,10 @@ public class SettingsForm {
             propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
         }
 
-        public void setMode(PomSorter.SortMode mode)
+        @Override
+        public String toString()
         {
-            Object oldValue = this.mode;
-            this.mode = mode;
-            propertyChangeSupport.firePropertyChange(PROPERTY_MODE, oldValue, this.mode);
-        }
-
-        public void setName(String name)
-        {
-            Object oldValue = this.name;
-            this.name = name;
-            propertyChangeSupport.firePropertyChange(PROPERTY_NAME, oldValue, this.name);
+            return getName();
         }
 
         public void updateModel()
@@ -834,6 +890,7 @@ public class SettingsForm {
             }
             setting.setMode(getMode());
             setting.setName(getName());
+            setting.setAttributeName(getAttributeName());
             final List<String> strings = new ArrayList<String>();
             for (StringHolder holder : getOrder()) {
                 strings.add(holder.getValue());
@@ -867,10 +924,11 @@ public class SettingsForm {
 
 // ------------------------ CANONICAL METHODS ------------------------
 
-        @Override
-        public String toString()
+        public void setValue(String value)
         {
-            return value;
+            Object oldValue = this.value;
+            this.value = value;
+            propertyChangeSupport.firePropertyChange(PROPERTY_VALUE, oldValue, this.value);
         }
 
 // -------------------------- OTHER METHODS --------------------------
@@ -885,11 +943,10 @@ public class SettingsForm {
             propertyChangeSupport.removePropertyChangeListener(propertyName, listener);
         }
 
-        public void setValue(String value)
+        @Override
+        public String toString()
         {
-            Object oldValue = this.value;
-            this.value = value;
-            propertyChangeSupport.firePropertyChange(PROPERTY_VALUE, oldValue, this.value);
+            return value;
         }
     }
 
@@ -898,15 +955,15 @@ public class SettingsForm {
 
         public static final String PROPERTY_CURRENT_ELEMENT = "currentElement";
 
-        private Integer currentElementIndex;
-
         private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
+
+        private final JList tagList;
+
+        private Integer currentElementIndex;
 
         private PresentableTagSortingSetting settingBeingRemoved;
 
         private List<PresentableTagSortingSetting> settingList = new ArrayList<PresentableTagSortingSetting>();
-
-        private final JList tagList;
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
@@ -922,10 +979,9 @@ public class SettingsForm {
 
 // --------------------- Interface ListModel ---------------------
 
-        @Override
-        public int getSize()
+        public PresentableTagSortingSetting getCurrentElement()
         {
-            return settingList.size();
+            return currentElementIndex == null ? null : getElementAt(currentElementIndex);
         }
 
         @Override
@@ -943,40 +999,19 @@ public class SettingsForm {
 // --------------------- Interface ListSelectionListener ---------------------
 
         @Override
-        public void valueChanged(ListSelectionEvent e)
+        public int getSize()
         {
-            if (!e.getValueIsAdjusting()) {
-                if (tagList.isSelectionEmpty()) {
-                    setCurrentElementIndex(null);
-                } else {
-                    final int selectionIndex = ((ListSelectionModel) e.getSource()).getLeadSelectionIndex();
-                    setCurrentElementIndex(selectionIndex);
-                }
-            }
+            return settingList.size();
         }
 
 // --------------------- Interface PropertyChangeListener ---------------------
-
-        @Override
-        public void propertyChange(PropertyChangeEvent evt)
-        {
-            if (PresentableTagSortingSetting.PROPERTY_NAME.equals(evt.getPropertyName())) {
-                for (int i = 0, tagsSize = settingList.size(); i < tagsSize; i++) {
-                    PresentableTagSortingSetting setting = settingList.get(i);
-                    if (setting.equals(evt.getSource())) {
-                        fireContentsChanged(this, i, i);
-                        return;
-                    }
-                }
-            }
-        }
-
-// -------------------------- OTHER METHODS --------------------------
 
         public void add(PresentableTagSortingSetting setting)
         {
             add(currentElementIndex == null ? settingList.size() : currentElementIndex, setting);
         }
+
+// -------------------------- OTHER METHODS --------------------------
 
         public synchronized void add(int index, PresentableTagSortingSetting setting)
         {
@@ -1005,9 +1040,18 @@ public class SettingsForm {
             }
         }
 
-        public PresentableTagSortingSetting getCurrentElement()
+        @Override
+        public void propertyChange(PropertyChangeEvent evt)
         {
-            return currentElementIndex == null ? null : getElementAt(currentElementIndex);
+            if (PresentableTagSortingSetting.PROPERTY_NAME.equals(evt.getPropertyName())) {
+                for (int i = 0, tagsSize = settingList.size(); i < tagsSize; i++) {
+                    PresentableTagSortingSetting setting = settingList.get(i);
+                    if (setting.equals(evt.getSource())) {
+                        fireContentsChanged(this, i, i);
+                        return;
+                    }
+                }
+            }
         }
 
         public synchronized PresentableTagSortingSetting remove(int index)
@@ -1028,12 +1072,59 @@ public class SettingsForm {
             remove(currentElementIndex);
         }
 
+        @Override
+        public void valueChanged(ListSelectionEvent e)
+        {
+            if (!e.getValueIsAdjusting()) {
+                if (tagList.isSelectionEmpty()) {
+                    setCurrentElementIndex(null);
+                } else {
+                    final int selectionIndex = ((ListSelectionModel) e.getSource()).getLeadSelectionIndex();
+                    setCurrentElementIndex(selectionIndex);
+                }
+            }
+        }
+
         private void setCurrentElementIndex(Integer currentElementIndex)
         {
             Object oldValue = this.currentElementIndex == null ? null : getElementAt(this.currentElementIndex);
             this.currentElementIndex = currentElementIndex;
             Object newValue = this.currentElementIndex == null ? null : getElementAt(this.currentElementIndex);
             propertyChangeSupport.firePropertyChange(PROPERTY_CURRENT_ELEMENT, oldValue, newValue);
+        }
+    }
+
+    private class CurrentSettingPropertyChangeListener implements PropertyChangeListener {
+// ------------------------------ FIELDS ------------------------------
+
+        private PresentableTagSortingSetting currentSetting;
+
+// ------------------------ INTERFACE METHODS ------------------------
+
+
+// --------------------- Interface PropertyChangeListener ---------------------
+
+        public void attachTo(PresentableTagSortingSetting setting)
+        {
+            if (currentSetting != null) {
+                currentSetting.removePropertyChangeListener(PresentableTagSortingSetting.PROPERTY_NAME, this);
+                currentSetting.removePropertyChangeListener(PresentableTagSortingSetting.PROPERTY_MODE, this);
+            }
+            this.currentSetting = setting;
+            if (this.currentSetting != null) {
+                currentSetting.addPropertyChangeListener(PresentableTagSortingSetting.PROPERTY_NAME, this);
+                currentSetting.addPropertyChangeListener(PresentableTagSortingSetting.PROPERTY_MODE, this);
+            }
+        }
+
+// -------------------------- OTHER METHODS --------------------------
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt)
+        {
+            if (PresentableTagSortingSetting.PROPERTY_MODE.equals(evt.getPropertyName())) {
+                updateChildControls();
+            }
         }
     }
 }

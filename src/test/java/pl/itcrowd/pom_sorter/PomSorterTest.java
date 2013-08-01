@@ -212,6 +212,51 @@ public class PomSorterTest extends PsiTestCase {
         assertEquals(expectedContents, xmlFile.getText());
     }
 
+    public void testSortWithChildTag()
+    {
+//        Givne
+        final String pomContents =
+            "<pluginRepositories>\n" + "   <pluginRepository>\n" + "       <id>jojo</id>\n" + "   </pluginRepository>\n" + "   <pluginRepository>\n"
+                + "       <id>arni</id>\n" + "   </pluginRepository>\n" + "</pluginRepositories>";
+        final String expectedContents =
+            "<pluginRepositories>\n" + "   <pluginRepository>\n" + "       <id>arni</id>\n" + "   </pluginRepository>\n" + "   <pluginRepository>\n"
+                + "       <id>jojo</id>\n" + "   </pluginRepository>\n" + "</pluginRepositories>";
+        final PomSorter pomSorter = new PomSorter(getProject());
+        final ArrayList<PomSorter.TagSortingSetting> order = new ArrayList<PomSorter.TagSortingSetting>();
+        order.add(new PomSorter.TagSortingSetting("pluginRepositories", PomSorter.SortMode.SUBTAG, "id"));
+        pomSorter.loadState(new PomSorter.State(order, PomSorter.SortMode.ALPHABETIC));
+        final PsiFile psiFile = super.createDummyFile("pom.xml", pomContents);
+        final XmlFile xmlFile = (XmlFile) psiFile.getViewProvider().getPsi(StdLanguages.XML);
+//        When
+        pomSorter.sortFile(xmlFile);
+
+//        Then
+        assertEquals(expectedContents, xmlFile.getText());
+    }
+
+    public void testSortWithAttribute()
+    {
+//        Givne
+        final String pomContents = "<profile kind=\"CodeFormatterProfile\" version=\"11\">\n" + "    <setting id=\"paren_in_if\" value=\"do not insert\"/>\n"
+            + "    <setting id=\"colon_in_assert\" value=\"insert\"/>\n" + "    <setting id=\"enum_constant\" value=\"end_of_line\"/>\n"
+            + "    <setting id=\"before_semicolon\" value=\"do not insert\"/>\n" + "</profile>";
+        final String expectedContents =
+            "<profile kind=\"CodeFormatterProfile\" version=\"11\">\n" + "    <setting id=\"before_semicolon\" value=\"do not insert\"/>\n"
+                + "    <setting id=\"colon_in_assert\" value=\"insert\"/>\n" + "    <setting id=\"enum_constant\" value=\"end_of_line\"/>\n"
+                + "    <setting id=\"paren_in_if\" value=\"do not insert\"/>\n" + "</profile>";
+        final PomSorter pomSorter = new PomSorter(getProject());
+        final ArrayList<PomSorter.TagSortingSetting> order = new ArrayList<PomSorter.TagSortingSetting>();
+        order.add(new PomSorter.TagSortingSetting("profile", PomSorter.SortMode.ATTRIBUTE, "id"));
+        pomSorter.loadState(new PomSorter.State(order, PomSorter.SortMode.ALPHABETIC));
+        final PsiFile psiFile = super.createDummyFile("pom.xml", pomContents);
+        final XmlFile xmlFile = (XmlFile) psiFile.getViewProvider().getPsi(StdLanguages.XML);
+//        When
+        pomSorter.sortFile(xmlFile);
+
+//        Then
+        assertEquals(expectedContents, xmlFile.getText());
+    }
+
     private PomSorter createPomSorter(String tagPattern, PomSorter.SortMode tagSortMode, PomSorter.SortMode defaultSortMode)
     {
         final PomSorter pomSorter = new PomSorter(getProject());

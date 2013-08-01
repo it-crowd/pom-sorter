@@ -28,6 +28,8 @@
         <![CDATA[
         <ul>
             <li>1.0.9-SNAPSHOT<ul>
+                <li>#10 Sort order like in maven.xsd</li>
+                <li>#12 Allow sorting tags by attribute values</li>
             </ul>
             <li>1.0.8<ul>
                 <li>#8 default sorting for "pluginRepository" tag</li>

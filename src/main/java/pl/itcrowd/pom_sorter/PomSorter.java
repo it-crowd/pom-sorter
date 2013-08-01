@@ -40,19 +40,54 @@ import java.util.regex.PatternSyntaxException;
     storages = {@Storage(
         file = "$PROJECT_FILE$")})
 public class PomSorter implements ProjectComponent, PersistentStateComponent<PomSorter.State> {
-// ------------------------------ FIELDS ------------------------------
 
     public static final String COMPONENT_NAME = "PomSorter";
 
     private static final Key<Collection<XmlComment>> COMMENT_KEY = Key.create("comment");
 
+    private static final List<String> DEFAULT_ACTIVATION_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_BUILD_BASE_CHILDREN_PRIORITY = new ArrayList<String>();
+
     private static final List<String> DEFAULT_BUILD_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY = new ArrayList<String>();
 
     private static final List<String> DEFAULT_DEPENDENCY_CHILDREN_PRIORITY = new ArrayList<String>();
 
-    private static final List<String> DEFAULT_EXECUTION_CHILDREN_PRIORITY = new ArrayList<String>();
+    private static final List<String> DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_DEVELOPER_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_EXCLUSION_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_EXTENSION_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_LICENSE_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_MAILING_LIST_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_NOTIFIER_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_ORGANIZATION_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_PARENT_CHILDREN_PRIORITY = new ArrayList<String>();
 
     private static final List<String> DEFAULT_PLUGIN_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY = new ArrayList<String>();
 
     private static final List<String> DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY = new ArrayList<String>();
 
@@ -60,68 +95,351 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
 
     private static final List<String> DEFAULT_PROJECT_CHILDREN_PRIORITY = new ArrayList<String>();
 
+    private static final List<String> DEFAULT_RELOCATION_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_REPORTING_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_REPORT_SETS_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_REPOSITORY_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_RESOURCE_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_SCM_CHILDREN_PRIORITY = new ArrayList<String>();
+
+    private static final List<String> DEFAULT_SITE_CHILDREN_PRIORITY = new ArrayList<String>();
+
     private static final Key<Collection<XmlComment>> INTERNAL_COMMENT_KEY = Key.create("internalComment");
 
+    private final Map<String, TagSortingSetting> order = new HashMap<String, TagSortingSetting>();
+
     private Comparator<XmlTag> artifactComparator = new ArtifactComparator();
+
+    private Map<String, AttributeComparator> attributeComparators = new HashMap<String, AttributeComparator>();
 
     private SortMode defaultSortMode = SortMode.ALPHABETIC;
 
     private FixedOrderComparator fixedOrderComparator = new FixedOrderComparator();
 
-    private final Map<String, TagSortingSetting> order = new HashMap<String, TagSortingSetting>();
-
     private Project project;
+
+    private Map<String, SubtagComparator> subtagComparators = new HashMap<String, SubtagComparator>();
 
     private TagNameComparator tagNameComparator = new TagNameComparator();
 
-// -------------------------- STATIC METHODS --------------------------
-
     static {
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("modelVersion");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("parent");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("modelVersion");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("groupId");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("artifactId");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("version");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("packaging");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("name");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("version");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("description");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("url");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("inceptionYear");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("licenses");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("organization");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("properties");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("modules");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("dependencyManagement");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("dependencies");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("build");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("reporting");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("prerequisites");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("issueManagement");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("ciManagement");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("inceptionYear");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("mailingLists");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("scm");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("prerequisites");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("repositories");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("pluginRepositories");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("distributionManagement");
-        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("profiles");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("mailingList");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("developers");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("developer");
         DEFAULT_PROJECT_CHILDREN_PRIORITY.add("contributors");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("contributor");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("licenses");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("license");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("scm");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("organization");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("build");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("profiles");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("profile");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("modules");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("module");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("repositories");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("repository");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("pluginRepositories");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("pluginRepository");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("dependencies");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("dependency");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("reports");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("reporting");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("dependencyManagement");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("distributionManagement");
+        DEFAULT_PROJECT_CHILDREN_PRIORITY.add("properties");
+
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("name");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("email");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("url");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("organization");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("organizationUrl");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("roles");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("role");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("timezone");
+        DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY.add("properties");
+
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("id");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("activation");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("build");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("modules");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("module");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("repositories");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("repository");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("pluginRepositories");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("pluginRepository");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("dependencies");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("dependency");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("reports");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("reporting");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("dependencyManagement");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("distributionManagement");
+        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("properties");
+
+        DEFAULT_ACTIVATION_CHILDREN_PRIORITY.add("activeByDefault");
+        DEFAULT_ACTIVATION_CHILDREN_PRIORITY.add("jdk");
+        DEFAULT_ACTIVATION_CHILDREN_PRIORITY.add("os");
+        DEFAULT_ACTIVATION_CHILDREN_PRIORITY.add("property");
+        DEFAULT_ACTIVATION_CHILDREN_PRIORITY.add("file");
+
+        DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY.add("missing");
+        DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY.add("exists");
+
+        DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY.add("name");
+        DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY.add("value");
+
+        DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY.add("name");
+        DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY.add("family");
+        DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY.add("arch");
+        DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY.add("version");
+
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("groupId");
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("artifactId");
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("version");
+        DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("type");
+        DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("classifier");
         DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("scope");
-        DEFAULT_PLUGIN_CHILDREN_PRIORITY.addAll(DEFAULT_DEPENDENCY_CHILDREN_PRIORITY);
-        DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY.add("id");
-        DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY.add("url");
-        DEFAULT_BUILD_CHILDREN_PRIORITY.add("finalName");
+        DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("systemPath");
+        DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("exclusions");
+        DEFAULT_DEPENDENCY_CHILDREN_PRIORITY.add("optional");
+
+        DEFAULT_EXCLUSION_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_EXCLUSION_CHILDREN_PRIORITY.add("groupId");
+
+        DEFAULT_REPORTING_CHILDREN_PRIORITY.add("excludeDefaults");
+        DEFAULT_REPORTING_CHILDREN_PRIORITY.add("outputDirectory");
+        DEFAULT_REPORTING_CHILDREN_PRIORITY.add("plugins");
+
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("groupId");
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("version");
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("inherited");
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("configuration");
+        DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY.add("reportSets");
+
+        DEFAULT_REPORT_SETS_CHILDREN_PRIORITY.add("id");
+        DEFAULT_REPORT_SETS_CHILDREN_PRIORITY.add("configuration");
+        DEFAULT_REPORT_SETS_CHILDREN_PRIORITY.add("inherited");
+        DEFAULT_REPORT_SETS_CHILDREN_PRIORITY.add("reports");
+
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("defaultGoal");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("resources");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("testResources");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("directory");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("finalName");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("filters");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("pluginManagement");
+        DEFAULT_BUILD_BASE_CHILDREN_PRIORITY.add("plugins");
+
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("groupId");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("version");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("extensions");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("executions");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("dependencies");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("goals");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("inherited");
+        DEFAULT_PLUGIN_CHILDREN_PRIORITY.add("configuration");
+
+        DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY.add("id");
+        DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY.add("phase");
+        DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY.add("goals");
+        DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY.add("inherited");
+        DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY.add("configuration");
+
+        DEFAULT_RESOURCE_CHILDREN_PRIORITY.add("targetPath");
+        DEFAULT_RESOURCE_CHILDREN_PRIORITY.add("filtering");
+        DEFAULT_RESOURCE_CHILDREN_PRIORITY.add("directory");
+        DEFAULT_RESOURCE_CHILDREN_PRIORITY.add("includes");
+        DEFAULT_RESOURCE_CHILDREN_PRIORITY.add("excludes");
+
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("repository");
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("snapshotRepository");
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("site");
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("downloadUrl");
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("relocation");
+        DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY.add("status");
+
+        DEFAULT_SITE_CHILDREN_PRIORITY.add("id");
+        DEFAULT_SITE_CHILDREN_PRIORITY.add("name");
+        DEFAULT_SITE_CHILDREN_PRIORITY.add("url");
+
+        DEFAULT_RELOCATION_CHILDREN_PRIORITY.add("groupId");
+        DEFAULT_RELOCATION_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_RELOCATION_CHILDREN_PRIORITY.add("version");
+        DEFAULT_RELOCATION_CHILDREN_PRIORITY.add("message");
+
+        DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY.add("uniqueVersion");
+        DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY.add("id");
+        DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY.add("name");
+        DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY.add("url");
+        DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY.add("layout");
+
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("releases");
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("snapshots");
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("id");
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("name");
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("url");
+        DEFAULT_REPOSITORY_CHILDREN_PRIORITY.add("layout");
+
+        DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY.add("enabled");
+        DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY.add("updatePolicy");
+        DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY.add("checksumPolicy");
+
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("name");
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("subscribe");
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("unsubscribe");
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("post");
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("archive");
+        DEFAULT_MAILING_LIST_CHILDREN_PRIORITY.add("otherArchives");
+
+        DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY.addAll(DEFAULT_REPOSITORY_CHILDREN_PRIORITY);
+
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("sourceDirectory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("scriptSourceDirectory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("testSourceDirectory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("outputDirectory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("testOutputDirectory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("extensions");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("defaultGoal");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("resources");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("testResources");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("directory");
+        DEFAULT_BUILD_CHILDREN_PRIORITY.add("finalName");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("filters");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("pluginManagement");
         DEFAULT_BUILD_CHILDREN_PRIORITY.add("plugins");
-        DEFAULT_PROFILE_CHILDREN_PRIORITY.add("id");
-        DEFAULT_EXECUTION_CHILDREN_PRIORITY.add("id");
-        DEFAULT_EXECUTION_CHILDREN_PRIORITY.add("phase");
+
+        DEFAULT_EXTENSION_CHILDREN_PRIORITY.add("groupId");
+        DEFAULT_EXTENSION_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_EXTENSION_CHILDREN_PRIORITY.add("version");
+
+        DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY.add("system");
+        DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY.add("url");
+
+        DEFAULT_PARENT_CHILDREN_PRIORITY.add("artifactId");
+        DEFAULT_PARENT_CHILDREN_PRIORITY.add("groupId");
+        DEFAULT_PARENT_CHILDREN_PRIORITY.add("version");
+        DEFAULT_PARENT_CHILDREN_PRIORITY.add("relativePath");
+
+        DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY.add("system");
+        DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY.add("url");
+        DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY.add("notifiers");
+
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("type");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("sendOnError");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("sendOnFailure");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("sendOnSuccess");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("sendOnWarning");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("address");
+        DEFAULT_NOTIFIER_CHILDREN_PRIORITY.add("configuration");
+
+        DEFAULT_LICENSE_CHILDREN_PRIORITY.add("name");
+        DEFAULT_LICENSE_CHILDREN_PRIORITY.add("url");
+        DEFAULT_LICENSE_CHILDREN_PRIORITY.add("distribution");
+        DEFAULT_LICENSE_CHILDREN_PRIORITY.add("comments");
+
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("id");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("name");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("email");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("url");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("organization");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("organizationUrl");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("roles");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("timezone");
+        DEFAULT_DEVELOPER_CHILDREN_PRIORITY.add("properties");
+
+        DEFAULT_SCM_CHILDREN_PRIORITY.add("connection");
+        DEFAULT_SCM_CHILDREN_PRIORITY.add("developerConnection");
+        DEFAULT_SCM_CHILDREN_PRIORITY.add("tag");
+        DEFAULT_SCM_CHILDREN_PRIORITY.add("url");
+
+        DEFAULT_ORGANIZATION_CHILDREN_PRIORITY.add("name");
+        DEFAULT_ORGANIZATION_CHILDREN_PRIORITY.add("url");
+    }
+
+    public PomSorter(Project project)
+    {
+        this.project = project;
+        if (order.isEmpty()) {
+            addToOrder(new TagSortingSetting("project", SortMode.FIXED, DEFAULT_PROJECT_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("contributor", SortMode.FIXED, DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("activation", SortMode.FIXED, DEFAULT_ACTIVATION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("**/activation/file", SortMode.FIXED, DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("**/activation/os", SortMode.FIXED, DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("**/activation/property", SortMode.FIXED, DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("exclusion", SortMode.FIXED, DEFAULT_EXCLUSION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("reporting", SortMode.FIXED, DEFAULT_REPORTING_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("**/reporting/plugins/plugin", SortMode.FIXED, DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("reportSets", SortMode.FIXED, DEFAULT_REPORT_SETS_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("**/profile/build", SortMode.FIXED, DEFAULT_BUILD_BASE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("/project/build", SortMode.FIXED, DEFAULT_BUILD_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("resource", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("distributionManagement", SortMode.FIXED, DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("dependencies", SortMode.ARTIFACT, Collections.<String>emptyList()));
+            addToOrder(new TagSortingSetting("dependency", SortMode.FIXED, DEFAULT_DEPENDENCY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("execution", SortMode.FIXED, DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("plugin", SortMode.FIXED, DEFAULT_PLUGIN_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("site", SortMode.FIXED, DEFAULT_SITE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("relocation", SortMode.FIXED, DEFAULT_RELOCATION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("/distributionManagement/snapshotRepository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("/distributionManagement/repository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("/project/repositories", SortMode.SUBTAG, "id"));
+            addToOrder(new TagSortingSetting("/project/repositories/repository", SortMode.FIXED, DEFAULT_REPOSITORY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("releases", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("snapshots", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("mailingList", SortMode.FIXED, DEFAULT_MAILING_LIST_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("extension", SortMode.FIXED, DEFAULT_EXTENSION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("issueManagement", SortMode.FIXED, DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("parent", SortMode.FIXED, DEFAULT_PARENT_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("ciManagement", SortMode.FIXED, DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("notifier", SortMode.FIXED, DEFAULT_NOTIFIER_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("license", SortMode.FIXED, DEFAULT_LICENSE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("developers", SortMode.SUBTAG, "id"));
+            addToOrder(new TagSortingSetting("developer", SortMode.FIXED, DEFAULT_DEVELOPER_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("scm", SortMode.FIXED, DEFAULT_SCM_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_ORGANIZATION_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
+            addToOrder(new TagSortingSetting("plugins", SortMode.ARTIFACT, Collections.<String>emptyList()));
+            addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+            addToOrder(new TagSortingSetting("roles", SortMode.SUBTAG, "name"));
+            addToOrder(new TagSortingSetting("notifiers", SortMode.SUBTAG, "type"));
+            addToOrder(new TagSortingSetting("filters", SortMode.SUBTAG, "type"));
+            addToOrder(new TagSortingSetting("executions", SortMode.SUBTAG, "id"));
+            addToOrder(new TagSortingSetting("resources", SortMode.SUBTAG, "directory"));
+            addToOrder(new TagSortingSetting("testResources", SortMode.SUBTAG, "directory"));
+            addToOrder(new TagSortingSetting("pluginRepositories", SortMode.SUBTAG, "id"));
+            addToOrder(new TagSortingSetting("licenses", SortMode.SUBTAG, "name"));
+            addToOrder(new TagSortingSetting("contributors", SortMode.SUBTAG, "name"));
+            addToOrder(new TagSortingSetting("mailingLists", SortMode.SUBTAG, "name"));
+            addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+            addToOrder(new TagSortingSetting("exclusions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+        }
     }
 
     @NotNull
@@ -145,24 +463,11 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         return newText;
     }
 
-// --------------------------- CONSTRUCTORS ---------------------------
-
-    public PomSorter(Project project)
+    @NotNull
+    public String getComponentName()
     {
-        this.project = project;
-        if (order.isEmpty()) {
-            order.put("project", new TagSortingSetting("project", SortMode.FIXED, DEFAULT_PROJECT_CHILDREN_PRIORITY));
-            order.put("dependencies", new TagSortingSetting("dependencies", SortMode.ARTIFACT, Collections.<String>emptyList()));
-            order.put("dependency", new TagSortingSetting("dependency", SortMode.FIXED, DEFAULT_DEPENDENCY_CHILDREN_PRIORITY));
-            order.put("build", new TagSortingSetting("build", SortMode.FIXED, DEFAULT_BUILD_CHILDREN_PRIORITY));
-            order.put("profile", new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
-            order.put("execution", new TagSortingSetting("execution", SortMode.FIXED, DEFAULT_EXECUTION_CHILDREN_PRIORITY));
-            order.put("plugin", new TagSortingSetting("plugin", SortMode.FIXED, DEFAULT_PLUGIN_CHILDREN_PRIORITY));
-            order.put("pluginRepository", new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
-        }
+        return COMPONENT_NAME;
     }
-
-// --------------------- GETTER / SETTER METHODS ---------------------
 
     public SortMode getDefaultSortMode()
     {
@@ -174,33 +479,23 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         this.defaultSortMode = defaultSortMode;
     }
 
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface BaseComponent ---------------------
-
-    public void initComponent()
+    @Override
+    public State getState()
     {
+        return new State(order.values(), getDefaultSortMode());
+    }
+
+    public Map<String, TagSortingSetting> getTagSortingSettings()
+    {
+        return order;
     }
 
     public void disposeComponent()
     {
     }
 
-// --------------------- Interface NamedComponent ---------------------
-
-    @NotNull
-    public String getComponentName()
+    public void initComponent()
     {
-        return COMPONENT_NAME;
-    }
-
-// --------------------- Interface PersistentStateComponent ---------------------
-
-    @Override
-    public State getState()
-    {
-        return new State(order.values(), getDefaultSortMode());
     }
 
     @Override
@@ -213,21 +508,12 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         }
     }
 
-// --------------------- Interface ProjectComponent ---------------------
-
-    public void projectOpened()
-    {
-    }
-
     public void projectClosed()
     {
     }
 
-// -------------------------- OTHER METHODS --------------------------
-
-    public Map<String, TagSortingSetting> getTagSortingSettings()
+    public void projectOpened()
     {
-        return order;
     }
 
     public void sortFile(final XmlFile xmlFile)
@@ -243,6 +529,11 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
                 }
             }.execute();
         }
+    }
+
+    private void addToOrder(TagSortingSetting setting)
+    {
+        order.put(setting.getName(), setting);
     }
 
     private PsiElement appendCommentsIfPresent(XmlTag tag, PsiElement previousPsiElement, Collection<XmlComment> comments)
@@ -270,6 +561,26 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
             tagToAssignComment.putUserData(commentKey, comments);
         }
         comments.add(comment);
+    }
+
+    private Comparator<XmlTag> getAttributeSorter(String attribute)
+    {
+        AttributeComparator comparator = attributeComparators.get(attribute);
+        if (null == comparator) {
+            comparator = new AttributeComparator(attribute);
+            attributeComparators.put(attribute, comparator);
+        }
+        return comparator;
+    }
+
+    private SubtagComparator getSubtagSorter(String attribute)
+    {
+        SubtagComparator comparator = subtagComparators.get(attribute);
+        if (null == comparator) {
+            comparator = new SubtagComparator(attribute);
+            subtagComparators.put(attribute, comparator);
+        }
+        return comparator;
     }
 
     private void sortChildren(XmlTag tag, Comparator<XmlTag> comparator)
@@ -311,22 +622,16 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         tag.putUserData(INTERNAL_COMMENT_KEY, null);
     }
 
-// -------------------------- ENUMERATIONS --------------------------
-
     public static enum SortMode {
         NONE,
         ALPHABETIC,
         ARTIFACT,
+        ATTRIBUTE,
+        SUBTAG,
         FIXED
     }
 
-// -------------------------- INNER CLASSES --------------------------
-
     public static class ArtifactComparator implements Comparator<XmlTag> {
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface Comparator ---------------------
 
         public int compare(XmlTag a, XmlTag b)
         {
@@ -340,24 +645,162 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         }
     }
 
+    public static class AttributeComparator implements Comparator<XmlTag> {
+
+        private String attribute;
+
+        public AttributeComparator(String attribute)
+        {
+            this.attribute = attribute;
+        }
+
+        public int compare(XmlTag a, XmlTag b)
+        {
+            return toString(a).compareTo(toString(b));
+        }
+
+        private String toString(XmlTag dependency)
+        {
+            final String attributeValue = dependency.getAttributeValue(attribute);
+            return null == attributeValue ? "" : attributeValue;
+        }
+    }
+
+    public static class State {
+
+        public SortMode defaultSortMode;
+
+        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
+        public List<TagSortingSetting> order = new ArrayList<TagSortingSetting>();
+
+        public State()
+        {
+        }
+
+        public State(Collection<TagSortingSetting> order, SortMode defaultSortMode)
+        {
+            this();
+            this.order.clear();
+            this.order.addAll(order);
+            this.defaultSortMode = defaultSortMode;
+        }
+    }
+
+    public static class SubtagComparator implements Comparator<XmlTag> {
+
+        private String tagName;
+
+        public SubtagComparator(String tagName)
+        {
+            this.tagName = tagName;
+        }
+
+        public int compare(XmlTag a, XmlTag b)
+        {
+            return toString(a).compareTo(toString(b));
+        }
+
+        private String toString(XmlTag dependency)
+        {
+            final String subTagText = dependency.getSubTagText(tagName);
+            return null == subTagText ? "" : subTagText;
+        }
+    }
+
+    public static class TagSortingSetting implements Serializable {
+
+        private String attributeName;
+
+        private SortMode mode;
+
+        private String name;
+
+        private List<String> order;
+
+        public TagSortingSetting()
+        {
+        }
+
+        public TagSortingSetting(@NotNull String name, @NotNull SortMode mode, @NotNull Collection<String> order)
+        {
+            this.name = name;
+            this.mode = mode;
+            this.order = new ArrayList<String>(order);
+        }
+
+        public TagSortingSetting(@NotNull String name, @NotNull SortMode mode, @NotNull String attributeName)
+        {
+            this.name = name;
+            this.mode = mode;
+            this.attributeName = attributeName;
+        }
+
+        public String getAttributeName()
+        {
+            return attributeName;
+        }
+
+        public void setAttributeName(String attributeName)
+        {
+            this.attributeName = attributeName;
+        }
+
+        public SortMode getMode()
+        {
+            if (mode == null) {
+                mode = SortMode.ALPHABETIC;
+            }
+            return mode;
+        }
+
+        public void setMode(SortMode mode)
+        {
+            this.mode = mode;
+        }
+
+        public String getName()
+        {
+            return name;
+        }
+
+        public void setName(String name)
+        {
+            this.name = name;
+        }
+
+        public List<String> getOrder()
+        {
+            if (order == null) {
+                order = new ArrayList<String>();
+            }
+            return order;
+        }
+
+        public void setOrder(List<String> order)
+        {
+            this.order = order;
+        }
+    }
+
     private class FixedOrderComparator implements Comparator<XmlTag> {
-// ------------------------------ FIELDS ------------------------------
 
         private final NullComparator nullComparator = new NullComparator();
 
         private final Map<String, Integer> priority;
-
-// --------------------------- CONSTRUCTORS ---------------------------
 
         private FixedOrderComparator()
         {
             this.priority = new HashMap<String, Integer>();
         }
 
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface Comparator ---------------------
+        public void setOrder(List<String> order)
+        {
+            priority.clear();
+            for (int i = 0, orderSize = order.size(); i < orderSize; i++) {
+                String value = order.get(i);
+                priority.put(value, i);
+            }
+        }
 
         @Override
         public int compare(XmlTag a, XmlTag b)
@@ -376,21 +819,9 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
                 return priorityA.compareTo(priorityB);
             }
         }
-
-// -------------------------- OTHER METHODS --------------------------
-
-        public void setOrder(List<String> order)
-        {
-            priority.clear();
-            for (int i = 0, orderSize = order.size(); i < orderSize; i++) {
-                String value = order.get(i);
-                priority.put(value, i);
-            }
-        }
     }
 
     private class PomSortVisitor extends XmlRecursiveElementVisitor {
-// -------------------------- OTHER METHODS --------------------------
 
         @Override
         public void visitXmlComment(XmlComment comment)
@@ -423,6 +854,10 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
             } else if (SortMode.FIXED.equals(mode)) {
                 fixedOrderComparator.setOrder(tagSortingSetting == null ? Collections.<String>emptyList() : tagSortingSetting.getOrder());
                 sortChildren(tag, fixedOrderComparator);
+            } else if (SortMode.ATTRIBUTE.equals(mode) && null != tagSortingSetting) {
+                sortChildren(tag, getAttributeSorter(tagSortingSetting.getAttributeName()));
+            } else if (SortMode.SUBTAG.equals(mode) && null != tagSortingSetting) {
+                sortChildren(tag, getSubtagSorter(tagSortingSetting.getAttributeName()));
             } else if (SortMode.ARTIFACT.equals(mode)) {
                 sortChildren(tag, artifactComparator);
             }
@@ -465,100 +900,12 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         }
     }
 
-    public static class State {
-// ------------------------------ FIELDS ------------------------------
-
-        public SortMode defaultSortMode;
-
-        @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
-        public List<TagSortingSetting> order = new ArrayList<TagSortingSetting>();
-
-// --------------------------- CONSTRUCTORS ---------------------------
-
-        public State()
-        {
-        }
-
-        public State(Collection<TagSortingSetting> order, SortMode defaultSortMode)
-        {
-            this();
-            this.order.clear();
-            this.order.addAll(order);
-            this.defaultSortMode = defaultSortMode;
-        }
-    }
-
     private class TagNameComparator implements Comparator<XmlTag> {
-// ------------------------ INTERFACE METHODS ------------------------
-
-
-// --------------------- Interface Comparator ---------------------
 
         @Override
         public int compare(XmlTag a, XmlTag b)
         {
             return a.getName().compareTo(b.getName());
-        }
-    }
-
-    public static class TagSortingSetting implements Serializable {
-// ------------------------------ FIELDS ------------------------------
-
-        private SortMode mode;
-
-        private String name;
-
-        private List<String> order;
-
-// --------------------------- CONSTRUCTORS ---------------------------
-
-        public TagSortingSetting()
-        {
-        }
-
-        public TagSortingSetting(@NotNull String name, @NotNull SortMode mode, @NotNull Collection<String> order)
-        {
-            this.name = name;
-            this.mode = mode;
-            this.order = new ArrayList<String>(order);
-        }
-
-// --------------------- GETTER / SETTER METHODS ---------------------
-
-        public SortMode getMode()
-        {
-            if (mode == null) {
-                mode = SortMode.ALPHABETIC;
-            }
-            return mode;
-        }
-
-        public void setMode(SortMode mode)
-        {
-            this.mode = mode;
-        }
-
-        public String getName()
-        {
-            return name;
-        }
-
-        public void setName(String name)
-        {
-            this.name = name;
-        }
-
-        public List<String> getOrder()
-        {
-            if (order == null) {
-                order = new ArrayList<String>();
-            }
-            return order;
-        }
-
-        public void setOrder(List<String> order)
-        {
-            this.order = order;
         }
     }
 }
