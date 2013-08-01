@@ -74,6 +74,8 @@ public class SettingsForm {
 
     private JButton removeChildButton;
 
+    private JButton restoreDefaultsButton;
+
     private JPanel rootComponent;
 
     private boolean settingCleanName;
@@ -100,7 +102,7 @@ public class SettingsForm {
 
 // --------------------------- CONSTRUCTORS ---------------------------
 
-    public SettingsForm(PomSorter pomSorter)
+    public SettingsForm(final PomSorter pomSorter)
     {
         this.pomSorter = pomSorter;
 
@@ -315,6 +317,17 @@ public class SettingsForm {
                 modified = true;
             }
         });
+        restoreDefaultsButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                final int result = JOptionPane.showConfirmDialog($$$getRootComponent$$$(), "Are you sure you want to restore defaults?");
+                if (JOptionPane.OK_OPTION == result) {
+                    pomSorter.restoreDefaults();
+                    reset();
+                }
+            }
+        });
         reset();
         updateTagsControls();
         updateChildControls();
@@ -323,6 +336,14 @@ public class SettingsForm {
     // --------------------- GETTER / SETTER METHODS ---------------------
 
     // -------------------------- OTHER METHODS --------------------------
+
+    /**
+     * @noinspection ALL
+     */
+    public JComponent $$$getRootComponent$$$()
+    {
+        return rootComponent;
+    }
 
     public void apply()
     {
@@ -488,7 +509,7 @@ public class SettingsForm {
             new GridConstraints(2, 1, 4, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null,
                 null, 0, false));
         final JPanel panel4 = new JPanel();
-        panel4.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        panel4.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         rootComponent.add(panel4, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW,
             GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
@@ -502,6 +523,11 @@ public class SettingsForm {
         panel4.add(defaultSortModeComboBox,
             new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW,
                 GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        restoreDefaultsButton = new JButton();
+        restoreDefaultsButton.setText("Restore defaults");
+        panel4.add(restoreDefaultsButton,
+            new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, 1, GridConstraints.SIZEPOLICY_FIXED, null, null,
+                new Dimension(100, -1), 0, false));
         label1.setLabelFor(tagNameTextField);
         ButtonGroup buttonGroup;
         buttonGroup = new ButtonGroup();
@@ -511,14 +537,6 @@ public class SettingsForm {
         buttonGroup.add(sortByGroupIdArtifactIdRadioButton);
         buttonGroup.add(sortByAttributeRadioButton);
         buttonGroup.add(sortBySubtagRadioButton);
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    public JComponent $$$getRootComponent$$$()
-    {
-        return rootComponent;
     }
 
     private void updateChildControls()

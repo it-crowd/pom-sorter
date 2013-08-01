@@ -385,60 +385,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
     {
         this.project = project;
         if (order.isEmpty()) {
-            addToOrder(new TagSortingSetting("project", SortMode.FIXED, DEFAULT_PROJECT_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("contributor", SortMode.FIXED, DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("activation", SortMode.FIXED, DEFAULT_ACTIVATION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("**/activation/file", SortMode.FIXED, DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("**/activation/os", SortMode.FIXED, DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("**/activation/property", SortMode.FIXED, DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("exclusion", SortMode.FIXED, DEFAULT_EXCLUSION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("reporting", SortMode.FIXED, DEFAULT_REPORTING_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("**/reporting/plugins/plugin", SortMode.FIXED, DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("reportSets", SortMode.FIXED, DEFAULT_REPORT_SETS_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("**/profile/build", SortMode.FIXED, DEFAULT_BUILD_BASE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("/project/build", SortMode.FIXED, DEFAULT_BUILD_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("resource", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("distributionManagement", SortMode.FIXED, DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("dependencies", SortMode.ARTIFACT, Collections.<String>emptyList()));
-            addToOrder(new TagSortingSetting("dependency", SortMode.FIXED, DEFAULT_DEPENDENCY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("execution", SortMode.FIXED, DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("plugin", SortMode.FIXED, DEFAULT_PLUGIN_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("site", SortMode.FIXED, DEFAULT_SITE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("relocation", SortMode.FIXED, DEFAULT_RELOCATION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("/distributionManagement/snapshotRepository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("/distributionManagement/repository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("/project/repositories", SortMode.SUBTAG, "id"));
-            addToOrder(new TagSortingSetting("/project/repositories/repository", SortMode.FIXED, DEFAULT_REPOSITORY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("releases", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("snapshots", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("mailingList", SortMode.FIXED, DEFAULT_MAILING_LIST_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("extension", SortMode.FIXED, DEFAULT_EXTENSION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("issueManagement", SortMode.FIXED, DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("parent", SortMode.FIXED, DEFAULT_PARENT_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("ciManagement", SortMode.FIXED, DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("notifier", SortMode.FIXED, DEFAULT_NOTIFIER_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("license", SortMode.FIXED, DEFAULT_LICENSE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("developers", SortMode.SUBTAG, "id"));
-            addToOrder(new TagSortingSetting("developer", SortMode.FIXED, DEFAULT_DEVELOPER_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("scm", SortMode.FIXED, DEFAULT_SCM_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_ORGANIZATION_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
-            addToOrder(new TagSortingSetting("plugins", SortMode.ARTIFACT, Collections.<String>emptyList()));
-            addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
-            addToOrder(new TagSortingSetting("roles", SortMode.SUBTAG, "name"));
-            addToOrder(new TagSortingSetting("notifiers", SortMode.SUBTAG, "type"));
-            addToOrder(new TagSortingSetting("filters", SortMode.SUBTAG, "type"));
-            addToOrder(new TagSortingSetting("executions", SortMode.SUBTAG, "id"));
-            addToOrder(new TagSortingSetting("resources", SortMode.SUBTAG, "directory"));
-            addToOrder(new TagSortingSetting("testResources", SortMode.SUBTAG, "directory"));
-            addToOrder(new TagSortingSetting("pluginRepositories", SortMode.SUBTAG, "id"));
-            addToOrder(new TagSortingSetting("licenses", SortMode.SUBTAG, "name"));
-            addToOrder(new TagSortingSetting("contributors", SortMode.SUBTAG, "name"));
-            addToOrder(new TagSortingSetting("mailingLists", SortMode.SUBTAG, "name"));
-            addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
-            addToOrder(new TagSortingSetting("exclusions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+            restoreDefaults();
         }
     }
 
@@ -514,6 +461,64 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
 
     public void projectOpened()
     {
+    }
+
+    public void restoreDefaults()
+    {
+        addToOrder(new TagSortingSetting("project", SortMode.FIXED, DEFAULT_PROJECT_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("contributor", SortMode.FIXED, DEFAULT_CONTRIBUTOR_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("profile", SortMode.FIXED, DEFAULT_PROFILE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("activation", SortMode.FIXED, DEFAULT_ACTIVATION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("**/activation/file", SortMode.FIXED, DEFAULT_ACTIVATION_FILE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("**/activation/os", SortMode.FIXED, DEFAULT_ACTIVATION_OS_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("**/activation/property", SortMode.FIXED, DEFAULT_ACTIVATION_PROPERTY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("exclusion", SortMode.FIXED, DEFAULT_EXCLUSION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("reporting", SortMode.FIXED, DEFAULT_REPORTING_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("**/reporting/plugins/plugin", SortMode.FIXED, DEFAULT_REPORT_PLUGIN_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("reportSets", SortMode.FIXED, DEFAULT_REPORT_SETS_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("**/profile/build", SortMode.FIXED, DEFAULT_BUILD_BASE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/project/build", SortMode.FIXED, DEFAULT_BUILD_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("resource", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("distributionManagement", SortMode.FIXED, DEFAULT_DISTRIBUTION_MANAGEMENT_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("dependencies", SortMode.ARTIFACT, Collections.<String>emptyList()));
+        addToOrder(new TagSortingSetting("dependency", SortMode.FIXED, DEFAULT_DEPENDENCY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("execution", SortMode.FIXED, DEFAULT_PLUGIN_EXECUTION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("plugin", SortMode.FIXED, DEFAULT_PLUGIN_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("site", SortMode.FIXED, DEFAULT_SITE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("relocation", SortMode.FIXED, DEFAULT_RELOCATION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/distributionManagement/snapshotRepository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/distributionManagement/repository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/project/repositories", SortMode.SUBTAG, "id"));
+        addToOrder(new TagSortingSetting("/project/repositories/repository", SortMode.FIXED, DEFAULT_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("releases", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("snapshots", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("mailingList", SortMode.FIXED, DEFAULT_MAILING_LIST_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("extension", SortMode.FIXED, DEFAULT_EXTENSION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("issueManagement", SortMode.FIXED, DEFAULT_ISSUE_MANAGEMENT_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("parent", SortMode.FIXED, DEFAULT_PARENT_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("ciManagement", SortMode.FIXED, DEFAULT_CI_MANAGEMENT_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("notifier", SortMode.FIXED, DEFAULT_NOTIFIER_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("license", SortMode.FIXED, DEFAULT_LICENSE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("developers", SortMode.SUBTAG, "id"));
+        addToOrder(new TagSortingSetting("developer", SortMode.FIXED, DEFAULT_DEVELOPER_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("scm", SortMode.FIXED, DEFAULT_SCM_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_ORGANIZATION_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("organization", SortMode.FIXED, DEFAULT_RESOURCE_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("plugins", SortMode.ARTIFACT, Collections.<String>emptyList()));
+        addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+        addToOrder(new TagSortingSetting("roles", SortMode.SUBTAG, "name"));
+        addToOrder(new TagSortingSetting("notifiers", SortMode.SUBTAG, "type"));
+        addToOrder(new TagSortingSetting("filters", SortMode.SUBTAG, "type"));
+        addToOrder(new TagSortingSetting("executions", SortMode.SUBTAG, "id"));
+        addToOrder(new TagSortingSetting("resources", SortMode.SUBTAG, "directory"));
+        addToOrder(new TagSortingSetting("testResources", SortMode.SUBTAG, "directory"));
+        addToOrder(new TagSortingSetting("pluginRepositories", SortMode.SUBTAG, "id"));
+        addToOrder(new TagSortingSetting("licenses", SortMode.SUBTAG, "name"));
+        addToOrder(new TagSortingSetting("contributors", SortMode.SUBTAG, "name"));
+        addToOrder(new TagSortingSetting("mailingLists", SortMode.SUBTAG, "name"));
+        addToOrder(new TagSortingSetting("extensions", SortMode.ARTIFACT, Collections.<String>emptyList()));
+        addToOrder(new TagSortingSetting("exclusions", SortMode.ARTIFACT, Collections.<String>emptyList()));
     }
 
     public void sortFile(final XmlFile xmlFile)
