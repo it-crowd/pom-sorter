@@ -487,8 +487,10 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
         addToOrder(new TagSortingSetting("pluginRepository", SortMode.FIXED, DEFAULT_PLUGIN_REPOSITORY_CHILDREN_PRIORITY));
         addToOrder(new TagSortingSetting("site", SortMode.FIXED, DEFAULT_SITE_CHILDREN_PRIORITY));
         addToOrder(new TagSortingSetting("relocation", SortMode.FIXED, DEFAULT_RELOCATION_CHILDREN_PRIORITY));
-        addToOrder(new TagSortingSetting("/distributionManagement/snapshotRepository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
-        addToOrder(new TagSortingSetting("/distributionManagement/repository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/project/dependencyManagement/dependencies", SortMode.NONE, Collections.<String>emptyList()));
+        addToOrder(
+            new TagSortingSetting("/project/distributionManagement/snapshotRepository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
+        addToOrder(new TagSortingSetting("/project/distributionManagement/repository", SortMode.FIXED, DEFAULT_DEPLOYMENT_REPOSITORY_CHILDREN_PRIORITY));
         addToOrder(new TagSortingSetting("/project/repositories", SortMode.SUBTAG, "id"));
         addToOrder(new TagSortingSetting("/project/repositories/repository", SortMode.FIXED, DEFAULT_REPOSITORY_CHILDREN_PRIORITY));
         addToOrder(new TagSortingSetting("releases", SortMode.FIXED, DEFAULT_REPOSITORY_POLICY_CHILDREN_PRIORITY));
