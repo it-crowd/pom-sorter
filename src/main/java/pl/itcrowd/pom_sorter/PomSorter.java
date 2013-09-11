@@ -33,6 +33,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.regex.PatternSyntaxException;
 
 @com.intellij.openapi.components.State(
@@ -115,7 +116,7 @@ public class PomSorter implements ProjectComponent, PersistentStateComponent<Pom
 
     private static final Key<Collection<XmlComment>> INTERNAL_COMMENT_KEY = Key.create("internalComment");
 
-    private final Map<String, TagSortingSetting> order = new HashMap<String, TagSortingSetting>();
+    private final Map<String, TagSortingSetting> order = new TreeMap<String, TagSortingSetting>();
 
     private Comparator<XmlTag> artifactComparator = new ArtifactComparator();
 
